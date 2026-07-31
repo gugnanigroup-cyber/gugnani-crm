@@ -1,0 +1,90 @@
+/* Gugnani Tyres CRM - Table Styles */
+
+.table-premium {
+  border-collapse: separate;
+  border-spacing: 0 10px;
+  width: 100%;
+}
+
+.table-premium thead th {
+  border-bottom: none;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  padding: 10px 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.table-premium tbody tr {
+  background-color: var(--card-bg);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+  border-radius: var(--border-radius-sm);
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.table-premium tbody tr:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.table-premium tbody td {
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 15px;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.table-premium tbody td:first-child {
+  border-left: 1px solid var(--border-color);
+  border-top-left-radius: var(--border-radius-sm);
+  border-bottom-left-radius: var(--border-radius-sm);
+}
+
+.table-premium tbody td:last-child {
+  border-right: 1px solid var(--border-color);
+  border-top-right-radius: var(--border-radius-sm);
+  border-bottom-right-radius: var(--border-radius-sm);
+}
+
+/* DataTables Overrides */
+.dataTables_wrapper .dataTables_filter input {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 6px 12px;
+  margin-left: 8px;
+}
+.dataTables_wrapper .dataTables_filter input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current, 
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+  background: var(--primary-color) !important;
+  color: white !important;
+  border-color: var(--primary-color) !important;
+  border-radius: var(--border-radius-sm);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background: rgba(204, 0, 0, 0.1) !important;
+  color: var(--primary-color) !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--border-radius-sm);
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+.status-open { background: rgba(23, 162, 184, 0.1); color: var(--info); }
+.status-scheduled { background: rgba(255, 193, 7, 0.1); color: #d39e00; }
+.status-completed { background: rgba(40, 167, 69, 0.1); color: var(--success); }
+.status-lost { background: rgba(220, 53, 69, 0.1); color: var(--danger); }

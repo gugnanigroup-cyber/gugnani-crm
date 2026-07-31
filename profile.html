@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Gugnani Tyres CRM</title>
+    <!-- CSS libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="loader-overlay" class="d-none">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+    
+    <div id="app-wrapper" class="d-flex w-100 vh-100">
+        <div id="sidebar-container"></div>
+        <div id="main-content" class="flex-grow-1 overflow-auto bg-light w-100">
+            <div id="topbar-container"></div>
+            
+            <div class="container-fluid p-4">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 col-lg-6">
+                        <div class="premium-card p-0 mt-4 overflow-hidden border-0 shadow-sm" style="border-radius: 12px; background: #fff;">
+                            <div class="bg-danger text-white p-5 text-center position-relative" style="background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);">
+                                <img src="" class="rounded-circle border border-4 border-white shadow user-avatar position-absolute start-50 translate-middle" style="width: 100px; height: 100px; bottom: -50px; background-color: #fff; object-fit: cover;" alt="User">
+                            </div>
+                            <div class="card-body px-5 pt-5 pb-4 text-center mt-4">
+                                <h3 class="fw-bold mb-1 user-name text-dark">Loading...</h3>
+                                <p class="text-muted mb-4 user-role">Role</p>
+                                
+                                <div class="row g-3 text-start mt-4">
+                                    <div class="col-sm-6">
+                                        <div class="p-3 bg-light rounded shadow-sm border border-light h-100">
+                                            <div class="small text-muted fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 1px;"><i class="fa-solid fa-phone me-2 text-danger"></i> Mobile</div>
+                                            <div class="fw-medium text-dark" id="profileMobile">Loading...</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="p-3 bg-light rounded shadow-sm border border-light h-100">
+                                            <div class="small text-muted fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 1px;"><i class="fa-solid fa-store me-2 text-danger"></i> Branches</div>
+                                            <div class="fw-medium text-dark user-branches">Loading...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-5 mb-2">
+                                    <button class="btn btn-outline-danger px-4 py-2 rounded-pill fw-bold shadow-sm" id="btnProfileLogout">
+                                        <i class="fa-solid fa-right-from-bracket me-2"></i>Logout from CRM
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script src="js/config.js?v=49"></script>
+    <script src="js/auth.js?v=49"></script>
+    <script src="js/utils.js?v=49"></script>
+    <script src="js/api.js?v=49"></script>
+    <script src="js/layout.js?v=49"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.Layout && window.Layout.render) {
+                Layout.render('My Profile');
+            }
+            
+            Auth.requireLogin();
+            
+            const user = Auth.getUser();
+            if (user) {
+                document.getElementById('profileMobile').textContent = user.Mobile || 'N/A';
+            }
+            
+            const btnProfileLogout = document.getElementById('btnProfileLogout');
+            if (btnProfileLogout) {
+                btnProfileLogout.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You will be logged out of the CRM.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, logout'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            Auth.logout();
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

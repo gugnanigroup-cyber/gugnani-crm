@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branches - Gugnani Tyres CRM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/table.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <div id="loader-overlay" class="d-none">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+    
+    <div id="app-wrapper" class="d-flex w-100 vh-100">
+        <div id="sidebar-container"></div>
+        <div id="main-content" class="flex-grow-1 overflow-auto bg-light w-100">
+            <div id="topbar-container"></div>
+            <div class="container-fluid p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="mb-1 text-secondary fw-bold">Branch Management</h4>
+                        <p class="text-muted mb-0 small">Manage store branches and locations.</p>
+                    </div>
+                    <button class="btn btn-primary px-4 shadow-sm" onclick="showBranchModal()"><i class="fa-solid fa-plus me-2"></i>Add Branch</button>
+                </div>
+                <div class="premium-card p-4">
+                    <div class="table-responsive">
+                        <table id="branchTable" class="table table-hover align-middle w-100">
+                            <thead class="table-light">
+                                <tr><th>Branch ID</th><th>Name</th><th>Address</th><th>Phone</th><th>Manager</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="modal-container">
+        <!-- Branch Modal -->
+        <div class="modal fade" id="branchModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-primary text-white border-0">
+                        <h5 class="modal-title fw-bold"><i class="fa-solid fa-store me-2"></i>Add / Edit Branch</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <form id="branchForm">
+                            <input type="hidden" id="branchId">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">Branch Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="branchName" required placeholder="e.g. Main Hub">
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">Phone Number</label>
+                                    <input type="tel" class="form-control" id="branchPhone" placeholder="e.g. 9876543210">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">Manager</label>
+                                    <input type="text" class="form-control" id="branchManager" placeholder="e.g. John Doe">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">Address</label>
+                                <textarea class="form-control" id="branchAddress" rows="2" placeholder="Full branch address"></textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label text-muted small fw-bold">Status</label>
+                                <select class="form-select" id="branchStatus">
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-primary w-100 py-2 fw-bold shadow-sm" id="btnSaveBranch">Save Branch</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/config.js?v=49"></script>
+    <script src="js/auth.js?v=49"></script>
+    <script src="js/db.js?v=49"></script>
+    <script src="js/sync.js?v=49"></script>
+    <script src="js/api.js?v=49"></script>
+    <script src="js/utils.js?v=49"></script>
+    <script src="js/layout.js?v=49"></script>
+    <script src="js/branch.js?v=49"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.Layout && window.Layout.render) {
+                Layout.render('Branches');
+            }
+        });
+    </script>
+</body>
+</html>

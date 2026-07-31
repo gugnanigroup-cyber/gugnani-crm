@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Gugnani Tyres CRM</title>
+    <!-- CSS libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/table.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <div id="loader-overlay" class="d-none">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+    
+    <div id="app-wrapper" class="d-flex w-100 vh-100">
+        <div id="sidebar-container"></div>
+        
+        <div id="main-content" class="flex-grow-1 overflow-auto bg-light w-100">
+            <div id="topbar-container"></div>
+            
+            <div class="container-fluid p-4">
+                <div class="row g-4 mb-4" id="kpiCards">
+                    <div class="col-xl-2 col-md-4 col-sm-6 flex-fill">
+                        <div class="premium-card p-3 text-center h-100">
+                            <h6 class="text-secondary fw-bold mb-2" style="font-size: 0.9rem;">Total Leads Today</h6>
+                            <h2 class="fw-bold text-primary mb-0" id="statTodayLeads">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-sm-6 flex-fill">
+                        <div class="premium-card p-3 text-center h-100">
+                            <h6 class="text-secondary fw-bold mb-2" style="font-size: 0.9rem;">Today's Follow-ups</h6>
+                            <h2 class="fw-bold text-info mb-0" id="statTodayFollowUps">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-sm-6 flex-fill">
+                        <div class="premium-card p-3 text-center h-100">
+                            <h6 class="text-secondary fw-bold mb-2" style="font-size: 0.9rem;">Pending Reminders</h6>
+                            <h2 class="fw-bold text-warning mb-0" id="statPendingFollowUps">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-sm-6 flex-fill">
+                        <div class="premium-card p-3 text-center h-100">
+                            <h6 class="text-secondary fw-bold mb-2" style="font-size: 0.9rem;">Completed Today</h6>
+                            <h2 class="fw-bold text-success mb-0" id="statCompleted">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-sm-6 flex-fill">
+                        <div class="premium-card p-3 text-center h-100">
+                            <h6 class="text-secondary fw-bold mb-2" style="font-size: 0.9rem;">Today's Fitments</h6>
+                            <h2 class="fw-bold text-danger mb-0" id="statTodayFitments">0</h2>
+                        </div>
+                    </div>
+                </div>
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="premium-card p-4">
+            <h6 class="text-secondary fw-bold mb-3 border-bottom pb-2">Weekly Lead Trend</h6>
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="leadTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="premium-card p-4">
+            <h6 class="text-secondary fw-bold mb-3 border-bottom pb-2">Lead Conversion Funnel</h6>
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="conversionChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="premium-card p-0">
+    <div class="card-header bg-dark text-white p-3 d-flex justify-content-between align-items-center">
+        <ul class="nav nav-pills" id="dashboardTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active py-1 px-3" data-bs-toggle="pill" data-bs-target="#pendingReminders" type="button">Pending Reminders</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-white py-1 px-3" data-bs-toggle="pill" data-bs-target="#todaysFitments" type="button">Today's Fitment Plan</button>
+            </li>
+        </ul>
+        <a href="followups.html" class="btn btn-sm btn-outline-light">View All</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="pendingReminders">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr><th>Time</th><th>Lead Details</th><th>Call</th><th>Executive</th><th>Status</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="remindersTable"><tr><td colspan="6" class="text-center py-4">Loading reminders...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="todaysFitments">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                          <thead class="table-light">
+                              <tr><th>Date & Time</th><th>Lead Details</th><th>Tyre Size & Qty</th><th>Contact</th><th>Reserved</th><th>Branch</th><th>Action</th></tr>
+                          </thead>
+                          <tbody id="fitmentsTable"><tr><td colspan="7" class="text-center py-4">Loading fitment plan...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-container"></div>
+    
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script src="js/config.js?v=48"></script>
+    <script src="js/auth.js?v=48"></script>
+    <script src="js/db.js?v=48"></script>
+    <script src="js/sync.js?v=48"></script>
+    <script src="js/api.js?v=48"></script>
+    <script src="js/utils.js?v=48"></script>
+    <script src="js/layout.js?v=53"></script>
+    <script src="js/lead-modal.js?v=53"></script>
+    <script src="js/dashboard.js?v=53"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.Layout && window.Layout.render) {
+                Layout.render('Dashboard');
+            }
+        });
+    </script>
+</body>
+</html>

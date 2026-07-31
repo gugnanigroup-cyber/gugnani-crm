@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+</head>
+<body>
+    <div id="calendar"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: [
+                    {
+                        title: "Test - Size",
+                        start: "2026-07-23T18:20",
+                        url: "javascript:alert('hello')",
+                        backgroundColor: "#CC0000",
+                        borderColor: "#CC0000"
+                    }
+                ],
+                dayCellDidMount: function(arg) {
+                    let tzoffset = (new Date()).getTimezoneOffset() * 60000;
+                    let localISOTime = (new Date(arg.date.getTime() - tzoffset)).toISOString().split('T')[0];
+                    if (localISOTime === "2026-07-23") {
+                        let html = <div>TEST</div>;
+                        const topEl = arg.el.querySelector('.fc-daygrid-day-top');
+                        if(topEl) topEl.insertAdjacentHTML('afterend', html);
+                    }
+                }
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+</html>

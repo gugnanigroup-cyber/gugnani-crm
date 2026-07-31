@@ -1,0 +1,76 @@
+/* Responsive CSS for Mobile and Tablets */
+
+/* Medium devices (tablets, 768px and up) */
+@media (max-width: 991.98px) {
+  /* Sidebar handling */
+  #sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px; /* Hide by default */
+    width: 280px;
+    height: 100vh;
+    z-index: 1040;
+    transition: left 0.3s ease;
+  }
+  
+  #sidebar.show {
+    left: 0;
+  }
+  
+  #main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 1030;
+    display: none;
+  }
+  
+  .sidebar-overlay.show {
+    display: block;
+  }
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (max-width: 767.98px) {
+  .glass-card {
+    padding: 15px;
+  }
+  
+  /* Make DataTables horizontally scrollable */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .dashboard-card {
+    margin-bottom: 15px;
+  }
+  
+  .filter-bar .row > div {
+    margin-bottom: 10px;
+  }
+}
+
+/* Extra small devices (phones, less than 576px) */
+@media (max-width: 575.98px) {
+  h2, .h2 {
+    font-size: 1.5rem;
+  }
+  
+  .btn {
+    padding: 8px 12px;
+  }
+  
+  /* Form adjustments */
+  .col-form-label {
+    padding-bottom: 0;
+  }
+}

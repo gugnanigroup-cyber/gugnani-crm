@@ -1,0 +1,21 @@
+{
+  "name": "Gugnani Tyres CRM",
+  "short_name": "CRM",
+  "start_url": "./login.html",
+  "display": "standalone",
+  "background_color": "#F4F6F9",
+  "theme_color": "#CC0000",
+  "description": "Enterprise Lead Management System",
+  "icons": [
+    {
+      "src": "https://ui-avatars.com/api/?name=GT&background=CC0000&color=fff&size=192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://ui-avatars.com/api/?name=GT&background=CC0000&color=fff&size=512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

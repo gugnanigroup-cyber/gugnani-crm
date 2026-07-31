@@ -1,0 +1,69 @@
+/* Gugnani Tyres CRM - Forms CSS */
+
+.form-section-title {
+  font-size: 14px;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(204, 0, 0, 0.1);
+}
+
+.form-label {
+  font-weight: 500;
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.required-asterisk {
+  color: var(--danger);
+  margin-left: 3px;
+}
+
+/* Modal styling */
+.modal-content {
+  border: none;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+  background-color: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+}
+
+.modal-title {
+  font-weight: 600;
+  color: var(--secondary-color);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border-color);
+  background-color: #fafafa;
+  border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+}
+
+/* Custom Checkbox/Radio */
+.form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Select2 overrides if used, otherwise datalist styling */
+input::-webkit-calendar-picker-indicator {
+  opacity: 100;
+}
+
+/* Flatpickr override */
+.flatpickr-calendar {
+  border-radius: var(--border-radius-sm) !important;
+  box-shadow: var(--shadow-md) !important;
+  border: 1px solid var(--border-color) !important;
+}
+.flatpickr-day.selected {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}

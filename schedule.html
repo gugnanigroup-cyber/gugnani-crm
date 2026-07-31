@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule - Gugnani Tyres CRM</title>
+    <!-- CSS libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/table.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <div id="loader-overlay" class="d-none">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+    
+    <div id="app-wrapper" class="d-flex w-100 vh-100">
+        <div id="sidebar-container"></div>
+        
+        <div id="main-content" class="flex-grow-1 overflow-auto bg-light w-100">
+            <div id="topbar-container"></div>
+            
+            <div class="container-fluid p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="mb-1 text-secondary fw-bold">Fitment Schedule</h4>
+                        <p class="text-muted mb-0 small">Upcoming tyre fittings and stock reservations.</p>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-outline-success shadow-sm me-2" onclick="CRMUtils.exportTableToCSV('scheduleTable', 'Schedule_Export.csv')">
+                            <i class="fa-solid fa-file-excel"></i> Export
+                        </button>
+                        <div class="btn-group shadow-sm">
+                            <button class="btn btn-outline-primary active" id="btnTableView"><i class="fa-solid fa-list"></i></button>
+                            <button class="btn btn-outline-primary" id="btnCalendarView"><i class="fa-solid fa-calendar-days"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="premium-card p-4" id="tableContainer">
+                    <div class="table-responsive">
+                        <table id="scheduleTable" class="table table-premium w-100">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Lead Details</th>
+                                    <th>Requirement</th>
+                                    <th>Call</th>
+                                    <th>Reserved</th>
+                                    <th>Branch</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="premium-card p-4 d-none" id="calendarContainer" style="height: calc(100vh - 180px); display: flex; flex-direction: column;">
+                    <div id="calendar" style="flex: 1; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Day Summary Modal -->
+    <div class="modal fade" id="daySummaryModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-primary"><i class="fa-solid fa-calendar-day me-2"></i>Fitments for <span id="dsDateTitle"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <ul class="list-group list-group-flush" id="dsLeadList">
+                        <!-- Leads populated via JS -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-container"></div>
+    
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    
+    <script src="js/config.js?v=46"></script>
+    <script src="js/auth.js?v=46"></script>
+    <script src="js/db.js?v=46"></script>
+    <script src="js/sync.js?v=46"></script>
+    <script src="js/api.js?v=46"></script>
+    <script src="js/utils.js?v=46"></script>
+    <script src="js/layout.js?v=46"></script>
+    <script src="js/lead-modal.js?v=46"></script>
+    <script src="js/lead-form.js?v=46"></script>
+    <script src="js/schedule.js?v=46"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.Layout && window.Layout.render) {
+                Layout.render('Schedule');
+            }
+        });
+    </script>
+</body>
+</html>

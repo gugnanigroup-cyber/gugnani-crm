@@ -1,0 +1,333 @@
+<!-- Lead Form Modal -->
+<div class="modal fade" id="leadModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white border-0">
+                <h5 class="modal-title fw-bold" id="leadModalTitle"><i class="fa-solid fa-user-plus me-2"></i> Create/Edit Lead</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <form id="leadForm">
+                    <div class="premium-card p-4 bg-white mb-4">
+                        <h6 class="form-section-title border-bottom pb-2 mb-3 text-primary"><i class="fa-solid fa-address-card me-2"></i>Customer Information</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Customer Name <span class="text-danger">*</span></label>
+                                <input type="text" id="customerName" class="form-control bg-light" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Mobile <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="tel" id="mobile" class="form-control bg-light" required>
+                                    <button class="btn btn-outline-primary" type="button" id="btnCheckDuplicate" title="Check if customer exists"><i class="fa-solid fa-magnifying-glass"></i> Check</button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="chkAltMobile">
+                                    <label class="form-check-label fw-bold" for="chkAltMobile">Alternate Mobile</label>
+                                </div>
+                                <div id="divAltMobile" style="display:none;">
+                                    <input type="tel" id="altMobile" class="form-control bg-light" placeholder="Enter alternate mobile">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="chkWhatsappSame" checked>
+                                    <label class="form-check-label fw-bold" for="chkWhatsappSame">WhatsApp is same</label>
+                                </div>
+                                <div id="divWhatsapp" style="display:none;">
+                                    <input type="tel" id="whatsapp" class="form-control bg-light" placeholder="Enter WhatsApp number">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Address</label>
+                                <textarea id="address" class="form-control bg-light" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="premium-card p-4 bg-white mb-4">
+                        <h6 class="form-section-title border-bottom pb-2 mb-3 text-primary"><i class="fa-solid fa-car me-2"></i>Vehicle & Requirement</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Vehicle Type</label>
+                                <select id="vehicleType" class="form-select bg-light">
+                                    <option value="Car">Car</option>
+                                    <option value="Bike">Bike</option>
+                                    <option value="Commercial">Commercial</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <div id="divOtherVehicleType" style="display:none;" class="mt-2">
+                                    <input type="text" id="otherVehicleType" class="form-control bg-light" placeholder="Specify Vehicle Type">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Vehicle Company</label>
+                                <input type="text" id="vehicleCompany" class="form-control bg-light">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Vehicle Model</label>
+                                <input type="text" id="vehicleModel" class="form-control bg-light">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Vehicle Number</label>
+                                <input type="text" id="vehicleNumber" class="form-control bg-light">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Tyre Size</label>
+                                <input type="text" id="tyreSize" class="form-control bg-light">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Quantity</label>
+                                <input type="number" id="quantity" class="form-control bg-light">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="premium-card p-4 bg-white">
+                        <h6 class="form-section-title border-bottom pb-2 mb-3 text-primary"><i class="fa-solid fa-chart-line me-2"></i>Status & Assignment</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Budget</label>
+                                <input type="number" id="budget" class="form-control bg-light" placeholder="₹">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Pref Brand</label>
+                                <input type="text" id="prefBrand" class="form-control bg-light">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Source</label>
+                                <select id="source" class="form-select bg-light">
+                                    <option>Walk In</option>
+                                    <option>Phone</option>
+                                    <option>Website</option>
+                                    <option>Reference</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Priority</label>
+                                <select id="priority" class="form-select bg-light">
+                                    <option>High</option>
+                                    <option>Medium</option>
+                                    <option>Low</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Assigned Exec</label>
+                                <select id="assignedExec" class="form-select bg-light"></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Assigned Branch</label>
+                                <select id="assignedBranch" class="form-select bg-light"></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Exp Fitment Date</label>
+                                <input type="date" id="expFitmentDate" class="form-control bg-light">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Remarks</label>
+                                <textarea id="remarks" class="form-control bg-light" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top-0 bg-light">
+                <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Close</button>
+                <button type="button" id="btnSaveLead" class="btn btn-primary px-4 rounded-pill">
+                    <i class="fa-solid fa-save me-2"></i> Save Lead
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Shared Action Modal (Complete / Lost) for Dashboard and Schedule -->
+<div class="modal fade" id="actionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white border-0">
+                <h5 class="modal-title fw-bold" id="actionModalTitle"><i class="fa-solid fa-bolt me-2"></i> Action</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <!-- Complete Form -->
+                <form id="completeForm" class="hidden">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle mb-3" style="width: 60px; height: 60px;">
+                            <i class="fa-solid fa-check fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold text-success">Mark as Completed</h5>
+                    </div>
+                    <div class="premium-card p-3 bg-white border-success" style="border-top: 4px solid #198754;">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Completion Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control bg-light" id="compDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Invoice Number (Optional)</label>
+                            <input type="text" class="form-control bg-light" id="compInvoice" placeholder="e.g. INV-12345">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Remarks</label>
+                            <textarea class="form-control bg-light" id="compRemarks" rows="2" placeholder="Any final notes..."></textarea>
+                        </div>
+                    </div>
+                    <button type="button" id="btnSubmitComplete" class="btn btn-success w-100 rounded-pill mt-3 py-2 fw-bold">
+                        <i class="fa-solid fa-check-circle me-2"></i> Confirm Completion
+                    </button>
+                </form>
+                
+                <!-- Lost Form -->
+                <form id="lostForm" class="hidden">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-danger text-white rounded-circle mb-3" style="width: 60px; height: 60px;">
+                            <i class="fa-solid fa-xmark fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold text-danger">Mark as Lost</h5>
+                    </div>
+                    <div class="premium-card p-3 bg-white border-danger" style="border-top: 4px solid #dc3545;">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Lost Reason <span class="text-danger">*</span></label>
+                            <select class="form-select bg-light" id="lostReason" required>
+                                <option value="">Select Reason</option>
+                                <option value="Purchased Elsewhere">Purchased Elsewhere</option>
+                                <option value="Price High">Price High</option>
+                                <option value="Out Of Stock">Out Of Stock</option>
+                                <option value="Vehicle Sold">Vehicle Sold</option>
+                                <option value="Wrong Number">Wrong Number</option>
+                                <option value="Duplicate">Duplicate</option>
+                                <option value="No Requirement">No Requirement</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Remarks</label>
+                            <textarea class="form-control bg-light" id="lostRemarks" rows="2" placeholder="Additional details..."></textarea>
+                        </div>
+                    </div>
+                    <button type="button" id="btnSubmitLost" class="btn btn-danger w-100 rounded-pill mt-3 py-2 fw-bold">
+                        <i class="fa-solid fa-ban me-2"></i> Confirm Mark as Lost
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Shared Schedule Modal -->
+<div class="modal fade" id="scheduleModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white border-0">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-calendar-plus me-2 text-warning"></i> Schedule Fitment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <form id="scheduleForm">
+                    <input type="hidden" id="schLeadId">
+                    <div class="premium-card p-4 bg-white">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Tyre Size</label>
+                                <input type="text" id="schSize" class="form-control bg-light fw-bold text-primary">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Quantity</label>
+                                <input type="number" id="schQty" class="form-control bg-light fw-bold text-primary">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Date <span class="text-danger">*</span></label>
+                                <input type="date" id="schDate" class="form-control bg-light" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Time <span class="text-danger">*</span></label>
+                                <input type="time" id="schTime" class="form-control bg-light" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Reserved Stock</label>
+                                <select id="schReserved" class="form-select bg-light">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 admin-only">
+                                <label class="form-label fw-bold text-dark">Branch</label>
+                                <select id="schBranch" class="form-select bg-light"></select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold text-dark">Remarks / Special Instructions</label>
+                                <textarea id="schRemarks" class="form-control bg-light" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top-0 bg-light">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="btnSaveSchedule" class="btn btn-warning rounded-pill px-4 fw-bold">
+                    <i class="fa-solid fa-save me-2"></i> Save Schedule
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Revert Schedule Modal -->
+<div class="modal fade" id="revertModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white border-0">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-rotate-left me-2 text-warning"></i> Revert Schedule</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="premium-card p-4 bg-white border-warning" style="border-top: 4px solid #ffc107;">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Reason for Reverting <span class="text-danger">*</span></label>
+                        <textarea id="revertReason" class="form-control bg-light" required placeholder="Why is this being reverted?"></textarea>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-dark">New Follow-up Date <span class="text-danger">*</span></label>
+                            <input type="date" id="revertDate" class="form-control bg-light" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-dark">New Follow-up Time <span class="text-danger">*</span></label>
+                            <input type="time" id="revertTime" class="form-control bg-light" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 bg-light">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="btnSubmitRevert" class="btn btn-warning rounded-pill px-4 fw-bold">
+                    <i class="fa-solid fa-rotate-left me-2"></i> Revert to Follow-up
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Duplicate Check Modal -->
+<div class="modal fade" id="duplicateModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-warning text-dark border-0">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i> Duplicate Found</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <p>A lead already exists with this Mobile/Vehicle number.</p>
+                <div id="duplicateLeadInfo" class="p-3 bg-white border rounded mb-3"></div>
+                <p class="mb-0 fw-bold text-secondary">Do you want to create a new duplicate lead anyway, or open the existing one?</p>
+            </div>
+            <div class="modal-footer border-top-0 bg-light">
+                <button type="button" class="btn btn-secondary px-3 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="btnCreateDuplicate" class="btn btn-danger px-3 rounded-pill">Create Duplicate</button>
+                <button type="button" id="btnOpenExisting" class="btn btn-primary px-3 rounded-pill">Open Existing</button>
+            </div>
+        </div>
+    </div>
+</div>
