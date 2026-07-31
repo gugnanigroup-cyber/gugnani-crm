@@ -861,6 +861,30 @@ window.Layout = {
         });
     }
 
+    const btnLogoutDrop = document.getElementById('btnLogoutDrop');
+    if (btnLogoutDrop) {
+        btnLogoutDrop.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You will be logged out of the CRM.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: typeof CONFIG !== 'undefined' ? CONFIG.COLORS.primary : '#CC0000',
+                    cancelButtonColor: typeof CONFIG !== 'undefined' ? CONFIG.COLORS.secondary : '#6c757d',
+                    confirmButtonText: 'Yes, logout'
+                }).then((result) => {
+                    if (result.isConfirmed && typeof Auth !== 'undefined') {
+                        Auth.logout();
+                    }
+                });
+            } else if (typeof Auth !== 'undefined') {
+                Auth.logout();
+            }
+        });
+    }
+
     const formUpdatePassword = document.getElementById('formUpdatePassword');
     if (formUpdatePassword) {
         formUpdatePassword.addEventListener('submit', async (e) => {
