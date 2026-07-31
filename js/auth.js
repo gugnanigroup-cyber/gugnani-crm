@@ -26,8 +26,43 @@ const Auth = {
     if (!this.isLoggedIn()) {
       window.location.href = 'login.html';
     } else {
+      this.checkPageAccess();
       this.updateUI();
     }
+  },
+  
+  checkPageAccess: function() {
+      const user = this.getUser();
+      if (!user || user.Role === 'Super Admin') return;
+      
+      const currentPath = window.location.pathname.split('/').pop().toLowerCase();
+      if (currentPath === 'login.html' || currentPath === '') return;
+      
+      if (typeof user.Permissions === 'string') {
+         const pArr = user.Permissions.split(',').map(p => p.trim().toLowerCase()).filter(p => p);
+         
+         const linkMap = {
+            'dashboard.html': 'dashboard',
+            'leads.html': 'leads',
+            'followups.html': 'followups',
+            'schedule.html': 'schedule',
+            'completed.html': 'completed',
+            'reports.html': 'reports',
+            'employees.html': 'employees',
+            'branches.html': 'branches',
+            'settings.html': 'settings'
+         };
+         
+         const reqPerm = linkMap[currentPath];
+         if (reqPerm && !pArr.includes(reqPerm)) {
+             let fallback = 'login.html';
+             if (pArr.length > 0) {
+                 const reverseMap = Object.keys(linkMap).find(key => linkMap[key] === pArr[0]);
+                 if (reverseMap) fallback = reverseMap;
+             }
+             window.location.href = fallback;
+         }
+      }
   },
   
   requireRole: function(allowedRoles) {
@@ -108,6 +143,32 @@ const Auth = {
     }
     if (user.Role === 'Reception') {
       document.querySelectorAll('.no-reception').forEach(el => el.style.display = 'none');
+    }
+    
+    // Hide Sidebar Nav Links based on Permissions
+    if (user.Role !== 'Super Admin' && typeof user.Permissions === 'string') {
+         const pArr = user.Permissions.split(',').map(p=>p.trim().toLowerCase()).filter(p => p);
+         const linkMap = {
+            'dashboard.html': 'dashboard',
+            'leads.html': 'leads',
+            'followups.html': 'followups',
+            'schedule.html': 'schedule',
+            'completed.html': 'completed',
+            'reports.html': 'reports',
+            'employees.html': 'employees',
+            'branches.html': 'branches',
+            'settings.html': 'settings'
+         };
+         
+         document.querySelectorAll('#sidebar .nav-link').forEach(link => {
+            const href = link.getAttribute('href');
+            if(href && linkMap[href]) {
+                if(!pArr.includes(linkMap[href])) {
+                    const li = link.closest('.nav-item');
+                    if (li) li.style.display = 'none';
+                }
+            }
+         });
     }
   }
 };

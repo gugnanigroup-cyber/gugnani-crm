@@ -69,6 +69,7 @@ function showEmployeeModal() {
     
     // Clear checks
     document.querySelectorAll('.branch-cb').forEach(cb => cb.checked = false);
+    document.querySelectorAll('.perm-cb').forEach(cb => cb.checked = false);
     
     const modal = new bootstrap.Modal(document.getElementById('employeeModal'));
     modal.show();
@@ -95,6 +96,14 @@ function editEmployee(id) {
         const brArr = emp.Branches.split(',').map(b=>b.trim());
         document.querySelectorAll('.branch-cb').forEach(cb => {
             if(brArr.includes(cb.value)) cb.checked = true;
+        });
+    }
+    
+    document.querySelectorAll('.perm-cb').forEach(cb => cb.checked = false);
+    if(emp.Permissions) {
+        const pArr = emp.Permissions.split(',').map(p=>p.trim());
+        document.querySelectorAll('.perm-cb').forEach(cb => {
+            if(pArr.includes(cb.value)) cb.checked = true;
         });
     }
     
@@ -129,6 +138,12 @@ function setupEventListeners() {
                 }
             }
             
+            // Get permissions
+            let permissions = [];
+            document.querySelectorAll('.perm-cb:checked').forEach(cb => {
+                permissions.push(cb.value);
+            });
+            
             const payload = {
                 EmployeeID: document.getElementById('empId').value,
                 Name: document.getElementById('empName').value,
@@ -137,7 +152,8 @@ function setupEventListeners() {
                 Password: document.getElementById('empPassword').value,
                 Role: role,
                 Status: document.getElementById('empStatus').value,
-                Branches: branches.join(', ')
+                Branches: branches.join(', '),
+                Permissions: permissions.join(',')
             };
             
             const action = payload.EmployeeID ? 'updateEmployee' : 'createEmployee';
@@ -161,7 +177,9 @@ function setupEventListeners() {
 function toggleBranchAssign(role) {
     if(role === 'Super Admin') {
         document.getElementById('branchAssignmentContainer').style.display = 'none';
+        document.getElementById('permissionsContainer').style.display = 'none';
     } else {
         document.getElementById('branchAssignmentContainer').style.display = 'block';
+        document.getElementById('permissionsContainer').style.display = 'block';
     }
 }
