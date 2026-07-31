@@ -23,7 +23,7 @@ window.Layout = {
     const sidebar = `
       <div class="sidebar bg-secondary text-white d-flex flex-column h-100" id="sidebar">
           <div class="sidebar-header p-4 text-center">
-              <img src="assets/logo_wide.png" alt="Gugnani Tyres CRM" style="max-width: 90%; max-height: 80px; mix-blend-mode: multiply; filter: brightness(1.15) contrast(1.2);" class="mb-1 bg-white rounded p-1">
+              <img src="assets/logo_wide.png" alt="Gugnani Tyres CRM" style="max-width: 90%; max-height: 80px; filter: brightness(1.15) contrast(1.2);" class="mb-1 bg-white rounded p-2">
           </div>
           
           <div class="px-3 mb-2 small text-muted text-uppercase fw-bold" style="letter-spacing: 1px; font-size: 0.7rem;">Menu</div>
