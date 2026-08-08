@@ -91,11 +91,19 @@ window.showLeadForm = function(leadId = null) {
     document.getElementById('leadModalTitle').innerHTML = currentEditLeadId ? 'Edit Lead Details' : 'Create New Lead';
 
     API.fetchWithCache('getLeadInitialData', {}, (initialData) => {
-        initTomSelects(initialData);
-        populateLeadForm();
-        
-        const modal = new bootstrap.Modal(document.getElementById('leadModal'));
-        modal.show();
+        const checkTomSelect = () => {
+            if (typeof TomSelect !== 'undefined') {
+                initTomSelects(initialData);
+                populateLeadForm();
+                
+                const modal = new bootstrap.Modal(document.getElementById('leadModal'));
+                modal.show();
+            } else {
+                console.log("Waiting for TomSelect to load...");
+                setTimeout(checkTomSelect, 50);
+            }
+        };
+        checkTomSelect();
     });
 };
 
@@ -145,12 +153,21 @@ function initTomSelects(data) {
     const brandEl = document.getElementById('prefBrand');
     if(brandEl) {
         if(brandEl.tomselect) brandEl.tomselect.destroy();
+        let brands = data.brands || [];
+        let mappedBrands = brands.map(b => {
+            const brandVal = b.Brand || b.brand || '';
+            return brandVal ? { Brand: brandVal } : null;
+        }).filter(Boolean);
         new TomSelect(brandEl, {
-            create: true,
+            create: function(input) {
+                return {
+                    Brand: input
+                };
+            },
             valueField: 'Brand',
             labelField: 'Brand',
             searchField: 'Brand',
-            options: data.brands || [],
+            options: mappedBrands,
             placeholder: 'Select or add brand...',
             plugins: ['dropdown_input']
         });
@@ -162,11 +179,12 @@ function initTomSelects(data) {
         if(tsEl.tomselect) tsEl.tomselect.destroy();
         let sizes = data.tyreSizes || [];
         let mappedSizes = sizes.map(s => {
-            return {
-                Size: s.Size,
-                cleanSize: s.Size.replace(/[^a-zA-Z0-9]/g, '')
-            };
-        });
+            const sizeVal = s.Size || s.size || '';
+            return sizeVal ? {
+                Size: sizeVal,
+                cleanSize: sizeVal.replace(/[^a-zA-Z0-9]/g, '')
+            } : null;
+        }).filter(Boolean);
         new TomSelect(tsEl, {
             create: function(input) {
                 return {
