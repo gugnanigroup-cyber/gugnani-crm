@@ -414,7 +414,9 @@ window.Layout = {
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Tyre Size</label>
-                                <select id="tyreSize" class="form-select bg-light" placeholder="Search or add size..."></select>
+                                <select id="tyreSize" class="form-select bg-light" placeholder="Search or add size...">
+                                    <option value=""></option>
+                                </select>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Quantity</label>
@@ -432,7 +434,9 @@ window.Layout = {
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Pref Brand</label>
-                                <select id="prefBrand" class="form-select bg-light" placeholder="Search brand..."></select>
+                                <select id="prefBrand" class="form-select bg-light" placeholder="Search brand...">
+                                    <option value=""></option>
+                                </select>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Source</label>
@@ -453,11 +457,15 @@ window.Layout = {
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Assigned Exec</label>
-                                <select id="assignedExec" class="form-select bg-light"></select>
+                                <select id="assignedExec" class="form-select bg-light">
+                                    <option value=""></option>
+                                </select>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Assigned Branch</label>
-                                <select id="assignedBranch" class="form-select bg-light"></select>
+                                <select id="assignedBranch" class="form-select bg-light">
+                                    <option value=""></option>
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Exp Fitment Date</label>

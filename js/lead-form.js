@@ -154,6 +154,18 @@ function initTomSelects(data) {
     if(brandEl) {
         if(brandEl.tomselect) brandEl.tomselect.destroy();
         let brands = data.brands || [];
+        if (brands.length === 0) {
+            brands = [
+                { Brand: 'MRF' },
+                { Brand: 'Apollo' },
+                { Brand: 'CEAT' },
+                { Brand: 'Bridgestone' },
+                { Brand: 'Michelin' },
+                { Brand: 'Goodyear' },
+                { Brand: 'Yokohama' },
+                { Brand: 'JK Tyre' }
+            ];
+        }
         let mappedBrands = brands.map(b => {
             const brandVal = b.Brand || b.brand || '';
             return brandVal ? { Brand: brandVal } : null;
@@ -178,6 +190,21 @@ function initTomSelects(data) {
     if(tsEl) {
         if(tsEl.tomselect) tsEl.tomselect.destroy();
         let sizes = data.tyreSizes || [];
+        if (sizes.length === 0) {
+            sizes = [
+                { Size: '145/80 R12' },
+                { Size: '155/80 R13' },
+                { Size: '165/80 R14' },
+                { Size: '175/65 R14' },
+                { Size: '185/65 R15' },
+                { Size: '195/55 R16' },
+                { Size: '205/55 R16' },
+                { Size: '215/60 R16' },
+                { Size: '215/55 R17' },
+                { Size: '235/65 R17' },
+                { Size: '265/60 R18' }
+            ];
+        }
         let mappedSizes = sizes.map(s => {
             const sizeVal = s.Size || s.size || '';
             return sizeVal ? {
