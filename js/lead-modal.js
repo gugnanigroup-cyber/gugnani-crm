@@ -335,5 +335,15 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.removeItem('autoOpenLeadDetails');
         setTimeout(() => window.openLeadDetailsModal(autoOpenId), 500); 
     }
+
+    const detailsModalEl = document.getElementById('leadDetailsModal');
+    if (detailsModalEl) {
+        detailsModalEl.addEventListener('hidden.bs.modal', () => {
+            if (lmDataChanged) {
+                lmDataChanged = false;
+                CRMUtils.refreshPageData();
+            }
+        });
+    }
 });
 
