@@ -397,6 +397,12 @@ window.openDashboardActionModal = function(action, leadId) {
         return;
     }
     
+    // Reset forms
+    const completeForm = document.getElementById('completeForm');
+    if (completeForm) completeForm.reset();
+    const lostForm = document.getElementById('lostForm');
+    if (lostForm) lostForm.reset();
+    
     document.getElementById('completeForm').classList.add('hidden');
     document.getElementById('lostForm').classList.add('hidden');
     
@@ -422,6 +428,10 @@ window.openScheduleModal = async function(leadId) {
         if (!modal) {
             modal = new bootstrap.Modal(modalEl);
         }
+        
+        // Reset form
+        const scheduleForm = document.getElementById('scheduleForm');
+        if (scheduleForm) scheduleForm.reset();
         
         document.getElementById('schLeadId').value = leadId;
         document.getElementById('schSize').value = 'Loading...';

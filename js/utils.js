@@ -91,11 +91,15 @@ const CRMUtils = {
         window.open(url, '_blank');
     },
 
-    refreshPageData: function() {
-        // Clear all caches
-        Object.keys(sessionStorage).forEach(key => {
-            if (key.startsWith('crm_cache_')) sessionStorage.removeItem(key);
-        });
+    refreshPageData: async function() {
+        // Clear all caches (both sessionStorage and IndexedDB)
+        if (typeof API !== 'undefined' && typeof API.clearCache === 'function') {
+            await API.clearCache();
+        } else {
+            Object.keys(sessionStorage).forEach(key => {
+                if (key.startsWith('crm_cache_')) sessionStorage.removeItem(key);
+            });
+        }
         
         // Hide modals
         const modals = document.querySelectorAll('.modal.show');

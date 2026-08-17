@@ -10,6 +10,17 @@ let lmDataChanged = false;
 window.openLeadDetailsModal = async function(leadId) {
     lmCurrentLeadId = leadId;
     
+    // Reset follow-up form and enable its submit button
+    const fuForm = document.getElementById('lmAddFollowupForm');
+    if (fuForm) {
+        fuForm.reset();
+        const submitBtn = fuForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Save Follow-up';
+        }
+    }
+    
     // Show modal immediately
     const modalEl = document.getElementById('leadDetailsModal');
     let modal = bootstrap.Modal.getInstance(modalEl);
@@ -158,6 +169,26 @@ function lmRenderTimeline(followups, lead) {
 window.lmOpenActionModal = function(action) {
     const modal = new bootstrap.Modal(document.getElementById('lmActionModal'));
     
+    // Reset forms and enable submit buttons
+    const completeForm = document.getElementById('lmCompleteForm');
+    if (completeForm) {
+        completeForm.reset();
+        const submitBtn = completeForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Confirm Completion';
+        }
+    }
+    const lostForm = document.getElementById('lmLostForm');
+    if (lostForm) {
+        lostForm.reset();
+        const submitBtn = lostForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Mark as Lost';
+        }
+    }
+    
     if(action === 'completed') {
         document.getElementById('lmActionModalTitle').textContent = 'Mark as Completed';
         document.getElementById('lmCompleteForm').classList.remove('hidden');
@@ -191,6 +222,17 @@ window.lmOpenScheduleModal = function() {
 };
 
 function _openSchModal() {
+    // Reset form and enable submit button
+    const schForm = document.getElementById('lmScheduleForm');
+    if (schForm) {
+        schForm.reset();
+        const submitBtn = schForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Confirm Schedule';
+        }
+    }
+    
     document.getElementById('lmSchDate').value = CRMUtils.getLocalDateISO();
     document.getElementById('lmSchDate').setAttribute('min', CRMUtils.getLocalDateISO());
     
