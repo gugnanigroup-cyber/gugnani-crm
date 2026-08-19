@@ -167,7 +167,7 @@ function lmRenderTimeline(followups, lead) {
 
 
 window.lmOpenActionModal = function(action) {
-    const modal = new bootstrap.Modal(document.getElementById('lmActionModal'));
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('lmActionModal'));
     
     // Reset forms and enable submit buttons
     const completeForm = document.getElementById('lmCompleteForm');
@@ -258,7 +258,7 @@ function _openSchModal() {
         });
     }
     
-    new bootstrap.Modal(document.getElementById('lmScheduleModal')).show();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('lmScheduleModal')).show();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
