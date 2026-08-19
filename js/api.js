@@ -523,13 +523,28 @@ const API = {
         }
 
         case "checkDuplicateLead": {
-          const { data: leads, error: dupErr } = await supabase.from('Leads')
-            .select('*')
-            .or(`Mobile.eq.${payload.mobile},VehicleNumber.eq.${payload.vehicleNumber}`);
+          const mobile = (payload.mobile || '').trim();
+          const vehicleNumber = (payload.vehicleNumber || '').trim();
+
+          if (!mobile && !vehicleNumber) {
+            result = { exists: false, type: null, lead: null };
+            break;
+          }
+
+          let query = supabase.from('Leads').select('*');
+          if (mobile && vehicleNumber) {
+            query = query.or(`Mobile.eq."${mobile}",VehicleNumber.eq."${vehicleNumber}"`);
+          } else if (mobile) {
+            query = query.eq('Mobile', mobile);
+          } else {
+            query = query.eq('VehicleNumber', vehicleNumber);
+          }
+
+          const { data: leads, error: dupErr } = await query;
           if (dupErr) throw new Error(dupErr.message);
 
-          const mobileMatch = (leads || []).find(l => l.Mobile === payload.mobile);
-          const vehicleMatch = (leads || []).find(l => l.VehicleNumber === payload.vehicleNumber);
+          const mobileMatch = mobile ? (leads || []).find(l => l.Mobile === mobile) : null;
+          const vehicleMatch = vehicleNumber ? (leads || []).find(l => l.VehicleNumber === vehicleNumber) : null;
           result = {
             exists: (leads || []).length > 0,
             type: mobileMatch && vehicleMatch ? 'both' : (mobileMatch ? 'mobile' : 'vehicle'),
@@ -559,9 +574,10 @@ const API = {
         }
 
         case "globalSearch": {
+          const q = (payload.query || '').trim();
           const { data: leads, error: sErr } = await supabase.from('Leads')
             .select('*')
-            .or(`CustomerName.ilike.%${payload.query}%,Mobile.ilike.%${payload.query}%,VehicleNumber.ilike.%${payload.query}%`)
+            .or(`CustomerName.ilike."%${q}%",Mobile.ilike."%${q}%",VehicleNumber.ilike."%${q}%"`)
             .limit(20);
           if (sErr) throw new Error(sErr.message);
           result = leads;
