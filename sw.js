@@ -1,4 +1,4 @@
-const CACHE_NAME = 'crm-v71';
+const CACHE_NAME = 'crm-v72';
 const STATIC_ASSETS = [
     './login.html',
     './dashboard.html',
@@ -40,8 +40,13 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    // Skip API calls - let them fall through to the network so api.js can handle offline logic
-    if (event.request.url.includes('script.google.com') || event.request.url.includes('script.googleusercontent.com')) {
+    // Only handle HTTP and HTTPS request schemes to avoid errors with chrome-extension://, etc.
+    if (!event.request.url.startsWith('http')) {
+        return;
+    }
+
+    // Skip Supabase API calls and legacy Google Script API calls
+    if (event.request.url.includes('supabase.co') || event.request.url.includes('script.google.com') || event.request.url.includes('script.googleusercontent.com')) {
         return; 
     }
 
