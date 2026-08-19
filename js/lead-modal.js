@@ -39,8 +39,6 @@ window.openLeadDetailsModal = async function(leadId) {
     
     modal.show();
     
-    modal.show();
-    
     try {
         const res = await API.call('getLeadDetails', { leadId: leadId }, false);
         const lead = res.lead;
