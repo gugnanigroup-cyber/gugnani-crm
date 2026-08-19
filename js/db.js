@@ -70,6 +70,46 @@ const CRMDB = {
     },
 
     /**
+     * Clear all database cache entries
+     */
+    clearAllCache: async function() {
+        if (!this.db) await this.init();
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['cache'], 'readwrite');
+            const store = transaction.objectStore('cache');
+            const request = store.clear();
+            
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    },
+
+    /**
+     * Delete cache entries starting with a prefix
+     */
+    clearCachePrefix: async function(prefix) {
+        if (!this.db) await this.init();
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['cache'], 'readwrite');
+            const store = transaction.objectStore('cache');
+            const request = store.openCursor();
+            
+            request.onsuccess = function(event) {
+                const cursor = event.target.result;
+                if (cursor) {
+                    if (cursor.key.startsWith(prefix)) {
+                        cursor.delete();
+                    }
+                    cursor.continue();
+                } else {
+                    resolve();
+                }
+            };
+            request.onerror = () => reject(request.error);
+        });
+    },
+
+    /**
      * Add action to the Sync Queue (Outbox)
      */
     addSyncTask: async function(action, payload) {

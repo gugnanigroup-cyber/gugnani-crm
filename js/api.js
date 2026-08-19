@@ -2,6 +2,16 @@
  * Gugnani Tyres CRM - API Wrapper (Supabase Client-Side Integration)
  */
 
+// Load Supabase SDK eagerly to prevent page transition delays
+(function() {
+  if (!window.supabase) {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    script.async = true;
+    document.head.appendChild(script);
+  }
+})();
+
 const API = {
   supabaseClient: null,
   
@@ -60,11 +70,18 @@ const API = {
     
     if (!window.supabase) {
       await new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Failed to load Supabase SDK'));
-        document.head.appendChild(script);
+        let script = document.querySelector('script[src*="supabase-js"]');
+        if (!script) {
+          script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+          document.head.appendChild(script);
+        }
+        if (window.supabase) {
+          resolve();
+        } else {
+          script.addEventListener('load', () => resolve());
+          script.addEventListener('error', () => reject(new Error('Failed to load Supabase SDK')));
+        }
       });
     }
     
@@ -190,7 +207,7 @@ const API = {
             stats.trendLabels.push(days[dObj.getDay()]);
           }
 
-          let { data: leads, error: lErr } = await supabase.from('Leads').select('*');
+          let { data: leads, error: lErr } = await supabase.from('Leads').select('LeadID, Status, Date, UpdatedAt, ExpFitmentDate, AssignedExec, AssignedBranch');
           if (lErr) throw new Error(lErr.message);
           leads = leads || [];
           if (user.Role === 'Sales Executive') {
@@ -211,7 +228,7 @@ const API = {
             if (l.Status === 'Scheduled' && l.ExpFitmentDate === today) stats.todayFitment++;
           });
 
-          let { data: followups, error: fErr } = await supabase.from('FollowUps').select('*');
+          let { data: followups, error: fErr } = await supabase.from('FollowUps').select('LeadID, RemDate, Exec, CreatedAt, Date, Time');
           if (fErr) throw new Error(fErr.message);
           followups = followups || [];
           if (user.Role === 'Sales Executive') {
@@ -436,21 +453,27 @@ const API = {
         }
 
         case "getLeads": {
-          let { data: leads, error: lErr } = await supabase.from('Leads').select('*');
-          if (lErr) throw new Error(lErr.message);
-          leads = leads || [];
+          let query = supabase.from('Leads').select('*');
+          
           if (user.Role === 'Sales Executive') {
-            leads = leads.filter(l => l.AssignedExec === user.EmployeeID);
+            query = query.eq('AssignedExec', user.EmployeeID);
           } else if (user.Role === 'Branch Manager' || user.Role === 'Reception') {
             const branches = user.Branches ? user.Branches.split(',').map(b => b.trim()) : [];
-            leads = leads.filter(l => branches.includes(l.AssignedBranch));
+            if (branches.length > 0) {
+              query = query.in('AssignedBranch', branches);
+            }
           }
+          
           if (payload.status) {
-            leads = leads.filter(l => l.Status === payload.status);
+            query = query.eq('Status', payload.status);
           }
-          // Sort leads (Newest first)
-          leads.sort((a, b) => new Date(b.CreatedAt || b.Date) - new Date(a.CreatedAt || a.Date));
-          result = leads;
+          
+          // Sort leads (Newest first) and limit to last 2000 rows to ensure high speed
+          query = query.order('CreatedAt', { ascending: false }).limit(2000);
+          
+          const { data: leads, error: lErr } = await query;
+          if (lErr) throw new Error(lErr.message);
+          result = leads || [];
           break;
         }
 
@@ -583,7 +606,13 @@ const API = {
         }
 
         case "getFollowUps": {
-          const { data: allLeads, error: lErr } = await supabase.from('Leads').select('LeadID, Status, CustomerName, Mobile');
+          let leadQuery = supabase.from('Leads').select('LeadID, Status, CustomerName, Mobile');
+          if (payload.type === 'today_completed') {
+            leadQuery = leadQuery.eq('Status', 'Completed');
+          } else {
+            leadQuery = leadQuery.not('Status', 'in', '("Completed","Lost","Scheduled")');
+          }
+          const { data: allLeads, error: lErr } = await leadQuery;
           if (lErr) throw new Error(lErr.message);
 
           const leadStatusMap = {};
@@ -593,7 +622,11 @@ const API = {
             leadDetailsMap[l.LeadID] = { CustomerName: l.CustomerName, Mobile: l.Mobile };
           });
 
-          let { data: followups, error: fErr } = await supabase.from('FollowUps').select('*');
+          let fuQuery = supabase.from('FollowUps').select('*');
+          if (user.Role === 'Sales Executive') {
+            fuQuery = fuQuery.eq('Exec', user.EmployeeID);
+          }
+          let { data: followups, error: fErr } = await fuQuery;
           if (fErr) throw new Error(fErr.message);
           followups = followups || [];
 
@@ -817,8 +850,12 @@ const API = {
       if (showLoading) this.hideLoader();
       
       // Invalidate cache for write operations
-      if (['createLead', 'updateLead', 'addFollowUp', 'updateLeadStatus', 'markCompleted', 'updateBranch', 'createBranch', 'updateEmployee', 'createEmployee', 'deleteLead', 'deleteFollowUp', 'scheduleFitment', 'revertSchedule', 'markLost'].includes(action)) {
-          this.clearCache();
+      if (['createLead', 'updateLead', 'addFollowUp', 'updateLeadStatus', 'markCompleted', 'deleteLead', 'deleteFollowUp', 'scheduleFitment', 'revertSchedule', 'markLost'].includes(action)) {
+          await this.clearCache('leads');
+      } else if (['updateBranch', 'createBranch'].includes(action)) {
+          await this.clearCache('branches');
+      } else if (['updateEmployee', 'createEmployee'].includes(action)) {
+          await this.clearCache('employees');
       }
 
       return result;
@@ -860,13 +897,27 @@ const API = {
     }
   },
   
-  clearCache: async function() {
+  clearCache: async function(category = 'leads') {
+      let actionsToInvalidate = [];
+      if (category === 'leads') {
+        actionsToInvalidate = ['getLeads', 'getFollowUps', 'getDashboardStats', 'getAdvancedReport', 'getLeadDetails'];
+      } else if (category === 'branches') {
+        actionsToInvalidate = ['getBranches', 'getLeadInitialData'];
+      } else if (category === 'employees') {
+        actionsToInvalidate = ['getEmployees', 'getLeadInitialData'];
+      } else {
+        actionsToInvalidate = ['getLeads', 'getFollowUps', 'getDashboardStats', 'getAdvancedReport', 'getLeadDetails', 'getBranches', 'getEmployees', 'getLeadInitialData'];
+      }
+
       // Clear sessionStorage
       const keysToRemove = [];
       for (let i = 0; i < sessionStorage.length; i++) {
           const key = sessionStorage.key(i);
           if (key && key.startsWith('crm_cache_')) {
-              keysToRemove.push(key);
+              const isMatch = actionsToInvalidate.some(act => key.startsWith(`crm_cache_${act}_`));
+              if (isMatch) {
+                  keysToRemove.push(key);
+              }
           }
       }
       keysToRemove.forEach(k => sessionStorage.removeItem(k));
@@ -874,7 +925,9 @@ const API = {
       // Clear IndexedDB if available
       if (typeof CRMDB !== 'undefined') {
           try {
-              await CRMDB.clearAllCache();
+              for (const act of actionsToInvalidate) {
+                  await CRMDB.clearCachePrefix(`crm_cache_${act}_`);
+              }
           } catch(e) {
               console.warn("Failed to clear IndexedDB cache", e);
           }
