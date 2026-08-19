@@ -455,8 +455,29 @@ const API = {
         }
 
         case "createLead": {
+          const generateLeadId = () => {
+              const now = new Date();
+              const options = { timeZone: 'Asia/Kolkata', year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+              const formatter = new Intl.DateTimeFormat('en-GB', options);
+              const parts = formatter.formatToParts(now);
+              const partMap = {};
+              parts.forEach(p => partMap[p.type] = p.value);
+              
+              const yy = partMap.year;
+              const MM = partMap.month;
+              const dd = partMap.day;
+              const HH = partMap.hour === '24' ? '00' : partMap.hour;
+              const mm = partMap.minute;
+              const ss = partMap.second;
+              const rand = Math.floor(Math.random() * 1000);
+              return `LD-${yy}${MM}${dd}${HH}${mm}${ss}-${rand}`;
+          };
+          
+          const leadId = payload.LeadID || generateLeadId();
+          
           const rawLead = {
             ...payload,
+            LeadID: leadId,
             Date: payload.Date || new Date().toISOString().split('T')[0],
             Time: payload.Time || new Date().toTimeString().split(' ')[0].substring(0, 5),
             Status: 'Open',
