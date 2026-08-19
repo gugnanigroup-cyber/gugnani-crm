@@ -1,4 +1,4 @@
-const CACHE_NAME = 'crm-v72';
+const CACHE_NAME = 'crm-v73';
 const STATIC_ASSETS = [
     './login.html',
     './dashboard.html',
