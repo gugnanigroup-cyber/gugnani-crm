@@ -29,9 +29,14 @@ const API = {
     const allowed = this.TABLE_COLUMNS[tableName];
     if (!allowed || !payload) return payload;
     const sanitized = {};
+    const numericColumns = ["Budget", "Quantity"];
     allowed.forEach(col => {
       if (col in payload) {
-        sanitized[col] = payload[col];
+        let val = payload[col];
+        if (numericColumns.includes(col) && val === "") {
+          val = null; // Convert empty string to null for SQL numeric fields
+        }
+        sanitized[col] = val;
       }
     });
     return sanitized;
