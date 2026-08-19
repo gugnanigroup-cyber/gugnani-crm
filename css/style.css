@@ -216,12 +216,67 @@ h1, h2, h3, h4, h5, h6 {
   display: none !important;
 }
 
-/* SweetAlert overrides */
+/* SweetAlert2 - Styled to match CRM */
 .swal2-popup {
   border-radius: var(--border-radius-md) !important;
+  font-family: var(--font-family) !important;
+  box-shadow: var(--shadow-lg) !important;
+  border: 1px solid var(--border-color) !important;
+  padding: 2rem !important;
+}
+.swal2-title {
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  color: var(--secondary-color) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  padding-bottom: 0.75rem !important;
+  margin-bottom: 1rem !important;
+}
+.swal2-html-container {
+  font-size: 0.9rem !important;
+  color: var(--text-main) !important;
+  text-align: left !important;
+}
+.swal2-html-container .form-label {
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  color: var(--text-main) !important;
+}
+.swal2-html-container .form-control,
+.swal2-html-container .form-select {
+  border-radius: var(--border-radius-sm) !important;
+  border: 1px solid var(--border-color) !important;
+  font-size: 0.9rem !important;
+  padding: 0.5rem 0.75rem !important;
+}
+.swal2-html-container .form-control:focus,
+.swal2-html-container .form-select:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 0.2rem rgba(204,0,0,0.15) !important;
 }
 .swal2-confirm {
-  background-color: var(--primary-color) !important;
+  border-radius: var(--border-radius-sm) !important;
+  font-weight: 600 !important;
+  padding: 0.6rem 1.5rem !important;
+  font-size: 0.9rem !important;
+}
+.swal2-cancel {
+  border-radius: var(--border-radius-sm) !important;
+  font-weight: 500 !important;
+  padding: 0.6rem 1.5rem !important;
+  font-size: 0.9rem !important;
+  background-color: #6c757d !important;
+  color: white !important;
+}
+.swal2-actions {
+  gap: 0.5rem !important;
+  margin-top: 1rem !important;
+}
+
+/* Blur background page when Swal popup is open */
+body.swal2-shown > :not(.swal2-container) {
+  filter: blur(4px);
+  transition: filter 0.2s ease;
 }
 
 /* Modal Backdrop Blurring */
