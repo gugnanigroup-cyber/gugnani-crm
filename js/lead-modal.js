@@ -2,8 +2,8 @@
  * Gugnani Tyres CRM - Lead Details Modal Logic
  */
 
-let lmCurrentLeadId = null;
-let lmCurrentLeadStatus = null;
+var lmCurrentLeadId = null;
+var lmCurrentLeadStatus = null;
 let lmDataChanged = false;
 
 // Opens the modal and loads the lead details
