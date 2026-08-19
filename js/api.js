@@ -527,7 +527,7 @@ const API = {
           const vehicleNumber = (payload.vehicleNumber || '').trim();
 
           if (!mobile && !vehicleNumber) {
-            result = { exists: false, type: null, lead: null };
+            result = { hasDuplicate: false, duplicates: [] };
             break;
           }
 
@@ -543,12 +543,10 @@ const API = {
           const { data: leads, error: dupErr } = await query;
           if (dupErr) throw new Error(dupErr.message);
 
-          const mobileMatch = mobile ? (leads || []).find(l => l.Mobile === mobile) : null;
-          const vehicleMatch = vehicleNumber ? (leads || []).find(l => l.VehicleNumber === vehicleNumber) : null;
+          const duplicates = leads || [];
           result = {
-            exists: (leads || []).length > 0,
-            type: mobileMatch && vehicleMatch ? 'both' : (mobileMatch ? 'mobile' : 'vehicle'),
-            lead: (leads || [])[0] || null
+            hasDuplicate: duplicates.length > 0,
+            duplicates: duplicates
           };
           break;
         }
