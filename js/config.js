@@ -3,11 +3,15 @@
  */
 
 const CONFIG = {
-  // IMPORTANT: Replace this URL with your actual Google Apps Script Web App URL after deployment
+  // Supabase Database Backend
+  SUPABASE_URL: "https://oyyskvvxatvkihuhmlpi.supabase.co",
+  SUPABASE_KEY: "sb_publishable_ztVYhcti5SI_TykQ9QH94A_RWp3eRWb",
+
+  // Legacy Apps Script API (kept for reference or backward fallback if needed)
   API_URL: "https://script.google.com/macros/s/AKfycbxt6pMaszwjHxn36G6RKVKZQzgbnem28-1qjfLwdTh_n8QhwTxlxDtHsSvRE8pZgS0A/exec",
   
   APP_NAME: "Gugnani Tyres CRM",
-  APP_VERSION: "1.0.0",
+  APP_VERSION: "2.0.0", // upgraded version to indicate Supabase integration
   
   // Theme configuration (used by JS charts, etc)
   COLORS: {

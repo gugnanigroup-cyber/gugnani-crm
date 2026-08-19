@@ -1,21 +1,23 @@
 /**
  * Gugnani Tyres CRM - Real-Time Polling Worker
- * Runs in the background to check for database updates without blocking the UI.
+ * Runs in the background to check for database updates on Supabase without blocking the UI.
  */
 
-let apiUrl = '';
+let supabaseUrl = '';
+let supabaseKey = '';
 let authToken = '';
-let lastUpdated = 0;
+let lastUpdated = '';
 let pollingInterval = null;
 
 self.onmessage = function(e) {
     const data = e.data;
     
     if (data.type === 'INIT') {
-        apiUrl = data.apiUrl;
+        supabaseUrl = data.supabaseUrl;
+        supabaseKey = data.supabaseKey;
         authToken = data.token;
         
-        // Start polling every 60 seconds to avoid hitting Google Apps Script quotas
+        // Start polling every 60 seconds
         if (!pollingInterval) {
             pollingInterval = setInterval(checkForUpdates, 60000);
             // Do an immediate initial check
@@ -30,29 +32,23 @@ self.onmessage = function(e) {
 };
 
 async function checkForUpdates() {
-    if (!apiUrl || !authToken) return;
+    if (!supabaseUrl || !supabaseKey) return;
 
     try {
-        const requestBody = {
-            action: 'checkDatabaseVersion',
-            token: authToken,
-            payload: {}
-        };
-
-        const response = await fetch(apiUrl, {
-            method: 'POST',
+        // Query the most recently updated Lead from Supabase using their REST API
+        const response = await fetch(`${supabaseUrl}/rest/v1/Leads?select=UpdatedAt&order=UpdatedAt.desc&limit=1`, {
             headers: {
-                'Content-Type': 'text/plain;charset=utf-8',
-            },
-            body: JSON.stringify(requestBody)
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`
+            }
         });
         
-        const result = await response.json();
+        const data = await response.json();
         
-        if (result.status === 'success' && result.data && result.data.lastUpdated) {
-            const serverLastUpdated = result.data.lastUpdated;
+        if (data && data[0] && data[0].UpdatedAt) {
+            const serverLastUpdated = data[0].UpdatedAt;
             
-            if (lastUpdated === 0) {
+            if (lastUpdated === '') {
                 // First time checking, just record the timestamp
                 lastUpdated = serverLastUpdated;
             } else if (serverLastUpdated > lastUpdated) {

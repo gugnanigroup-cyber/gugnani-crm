@@ -29,7 +29,8 @@ const SyncEngine = {
             this.pollingWorker = new Worker('js/pollingWorker.js');
             this.pollingWorker.postMessage({
                 type: 'INIT',
-                apiUrl: typeof CONFIG !== 'undefined' ? CONFIG.API_URL : '',
+                supabaseUrl: typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_URL : '',
+                supabaseKey: typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_KEY : '',
                 token: localStorage.getItem('crm_token') || ''
             });
 
@@ -104,32 +105,11 @@ const SyncEngine = {
             for (const task of tasks) {
                 try {
                     // Send directly bypassing the API wrapper's queue logic to prevent infinite loops
-                    const token = localStorage.getItem('crm_token');
-                    const requestBody = {
-                        action: task.action,
-                        token: token,
-                        payload: task.payload
-                    };
-
-                    const response = await fetch(CONFIG.API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify(requestBody)
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.status === 'success') {
-                        await CRMDB.removeSyncTask(task.id);
-                        successCount++;
-                    } else {
-                        console.error('Task failed on server:', result.message);
-                        // If it fails on server (e.g. validation error), we probably want to discard it or alert user.
-                        // For now, remove it to prevent endless blockage.
-                        await CRMDB.removeSyncTask(task.id);
-                    }
+                    await API.call(task.action, task.payload, false, true);
+                    await CRMDB.removeSyncTask(task.id);
+                    successCount++;
                 } catch (err) {
-                    console.error('Network failure during sync, will retry later.', err);
+                    console.error('Network failure or error during sync, will retry later.', err);
                     break; // Stop processing queue if internet drops again
                 }
             }
