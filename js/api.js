@@ -511,19 +511,16 @@ const API = {
           const { error: insErr } = await supabase.from('Leads').insert(cleanLead);
           if (insErr) throw new Error(insErr.message);
           
-          // Auto-create initial follow-up reminder
-          const tomorrow = new Date();
-          tomorrow.setDate(tomorrow.getDate() + 1);
-          const remDate = tomorrow.toISOString().split('T')[0];
-          
+          // Auto-create initial follow-up reminder so it appears on the Follow-ups page immediately
           const rawFu = {
             FollowUpID: "FU-" + Math.random().toString(36).substring(2, 12).toUpperCase(),
             LeadID: cleanLead.LeadID,
             Date: cleanLead.Date,
             Time: cleanLead.Time,
-            Discussion: "New Lead Created.",
-            RemDate: remDate,
-            RemTime: "10:00",
+            Discussion: "New Lead Created. Initial Contact Required.",
+            Feedback: "New",
+            RemDate: cleanLead.Date,
+            RemTime: cleanLead.Time,
             Exec: cleanLead.AssignedExec,
             Status: "Pending",
             CreatedAt: new Date().toISOString()

@@ -89,10 +89,10 @@ async function loadScheduleData() {
                     `
                     <div class="d-flex gap-1">
                         <button class="btn btn-sm btn-info text-white" onclick="window.openLeadDetailsModal('${lead.LeadID}')" title="Open Lead Details"><i class="fa-solid fa-eye"></i></button>
-                        <button class="btn btn-sm btn-success" onclick="schOpenActionModal('completed', '${lead.LeadID}')" title="Complete"><i class="fa-solid fa-check"></i></button>
-                        <button class="btn btn-sm btn-danger" onclick="schOpenActionModal('lost', '${lead.LeadID}')" title="Mark Lost"><i class="fa-solid fa-xmark"></i></button>
-                        <button class="btn btn-sm btn-primary" onclick="openScheduleModal('${lead.LeadID}')" title="Edit Schedule"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-sm btn-warning" onclick="revertSchedule('${lead.LeadID}')" title="Revert to Follow-up"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button class="btn btn-sm btn-success" onclick="window.schOpenActionModal('completed', '${lead.LeadID}')" title="Complete"><i class="fa-solid fa-check"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="window.schOpenActionModal('lost', '${lead.LeadID}')" title="Mark Lost"><i class="fa-solid fa-xmark"></i></button>
+                        <button class="btn btn-sm btn-primary" onclick="window.openScheduleModal('${lead.LeadID}')" title="Edit Schedule"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-warning" onclick="window.revertSchedule('${lead.LeadID}')" title="Revert to Follow-up"><i class="fa-solid fa-rotate-left"></i></button>
                     </div>
                     `
                 ]);
