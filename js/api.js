@@ -412,6 +412,34 @@ const API = {
           break;
         }
 
+        case "getLeadInitialData": {
+          const { data: branches } = await supabase.from('Branches').select('*').eq('Status', 'Active');
+          let { data: employees } = await supabase.from('Employees').select('*').eq('Status', 'Active');
+          
+          employees = employees || [];
+          if (user.Role === 'Branch Manager') {
+            const mgrBranches = user.Branches ? user.Branches.split(',').map(b => b.trim()) : [];
+            employees = employees.filter(emp => {
+              if (emp.Role === 'Super Admin') return false;
+              const empBranches = emp.Branches ? emp.Branches.split(',').map(b => b.trim()) : [];
+              return empBranches.some(b => mgrBranches.includes(b));
+            });
+          }
+
+          const { data: tyreSizes } = await supabase.from('MasterTyreSize').select('*').eq('Active', 'Active');
+          const { data: brands } = await supabase.from('MasterBrands').select('*').eq('Active', 'Active');
+          const { data: vehicles } = await supabase.from('MasterVehicle').select('*');
+
+          result = {
+            branches: branches || [],
+            employees: employees || [],
+            tyreSizes: tyreSizes || [],
+            brands: brands || [],
+            vehicles: vehicles || []
+          };
+          break;
+        }
+
         case "getLeadDetails": {
           const { data: lead } = await supabase.from('Leads').select('*').eq('LeadID', payload.leadId).single();
           const { data: followups } = await supabase.from('FollowUps').select('*').eq('LeadID', payload.leadId).order('CreatedAt', { ascending: false });
