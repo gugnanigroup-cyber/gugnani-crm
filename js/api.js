@@ -5,6 +5,38 @@
 const API = {
   supabaseClient: null,
   
+  // Strict list of database columns for payload sanitization
+  TABLE_COLUMNS: {
+    Employees: ["EmployeeID", "Name", "Mobile", "Email", "PasswordHash", "Role", "Branches", "Status", "CreatedAt", "LastLogin", "Permissions"],
+    Branches: ["BranchID", "BranchName", "Address", "Phone", "Manager", "Status", "CreatedAt"],
+    Leads: ["LeadID", "Date", "Time", "CustomerName", "Mobile", "AltMobile", "WhatsApp", "Email", "Address", "VehicleType", "VehicleCompany", "VehicleModel", "VehicleNumber", "TyreSize", "Quantity", "PrefBrand", "Budget", "Source", "Priority", "Temperature", "AssignedExec", "AssignedBranch", "ExpFitmentDate", "Remarks", "Status", "CreatedAt", "UpdatedAt"],
+    FollowUps: ["FollowUpID", "LeadID", "Date", "Time", "Discussion", "Feedback", "RemDate", "RemTime", "Exec", "Status", "CreatedAt"],
+    ScheduleFitment: ["ScheduleID", "LeadID", "FitmentDate", "FitmentTime", "Branch", "TyreSize", "Quantity", "ReservedStock", "Exec", "Remarks", "Status", "CreatedAt"],
+    Completed: ["CompID", "LeadID", "CompDate", "CompTime", "Branch", "InvoiceNo", "Remarks", "CreatedAt"],
+    Lost: ["LostID", "LeadID", "Reason", "Remarks", "CreatedAt"],
+    MasterTyreSize: ["SizeID", "Size", "Active"],
+    MasterBrands: ["BrandID", "Brand", "Active"],
+    MasterVehicle: ["VehicleID", "Company", "Model", "Type"],
+    Settings: ["Key", "Value"],
+    Sessions: ["Token", "EmployeeID", "CreatedAt", "ExpiresAt"]
+  },
+
+  /**
+   * Sanitizes payload by stripping out extra properties (like _rowNum, client-only UI helpers, etc.)
+   * that do not exist as columns in the PostgreSQL database table.
+   */
+  sanitize: function(tableName, payload) {
+    const allowed = this.TABLE_COLUMNS[tableName];
+    if (!allowed || !payload) return payload;
+    const sanitized = {};
+    allowed.forEach(col => {
+      if (col in payload) {
+        sanitized[col] = payload[col];
+      }
+    });
+    return sanitized;
+  },
+  
   showLoader: function() {
     const loader = document.getElementById('loader-overlay');
     if (loader) loader.classList.remove('hidden');
@@ -66,13 +98,15 @@ const API = {
           throw { code: 401, message: "Unauthorized. Please log in." };
         }
         // Validate session token
-        const { data: session } = await supabase.from('Sessions').select('*').eq('Token', token).maybeSingle();
+        const { data: session, error: sErr } = await supabase.from('Sessions').select('*').eq('Token', token).maybeSingle();
+        if (sErr) throw new Error(sErr.message);
         if (!session || new Date(session.ExpiresAt) < new Date()) {
           throw { code: 401, message: "Session expired or invalid." };
         }
         
         // Fetch user info
-        const { data: emp } = await supabase.from('Employees').select('*').eq('EmployeeID', session.EmployeeID).eq('Status', 'Active').maybeSingle();
+        const { data: emp, error: eErr } = await supabase.from('Employees').select('*').eq('EmployeeID', session.EmployeeID).eq('Status', 'Active').maybeSingle();
+        if (eErr) throw new Error(eErr.message);
         if (!emp) {
           throw { code: 401, message: "User account deactivated." };
         }
@@ -83,14 +117,16 @@ const API = {
         if (!isReadOp) {
           const newExpiry = new Date();
           newExpiry.setHours(newExpiry.getHours() + 12);
-          await supabase.from('Sessions').update({ ExpiresAt: newExpiry.toISOString() }).eq('Token', token);
+          const { error: extErr } = await supabase.from('Sessions').update({ ExpiresAt: newExpiry.toISOString() }).eq('Token', token);
+          if (extErr) throw new Error(extErr.message);
         }
       }
 
       // 2. Action router
       switch (action) {
         case "login": {
-          const { data: emp } = await supabase.from('Employees').select('*').eq('Mobile', payload.mobile).maybeSingle();
+          const { data: emp, error: loginErr } = await supabase.from('Employees').select('*').eq('Mobile', payload.mobile).maybeSingle();
+          if (loginErr) throw new Error(loginErr.message);
           if (!emp) throw new Error("Invalid mobile or password.");
           if (emp.Status !== "Active") throw new Error("Account is inactive. Contact Administrator.");
 
@@ -102,15 +138,17 @@ const API = {
           const expiresAt = new Date();
           expiresAt.setHours(expiresAt.getHours() + 12); // 12-hour expiry
 
-          await supabase.from('Sessions').insert({
+          const { error: insSessionErr } = await supabase.from('Sessions').insert({
             Token: sessionToken,
             EmployeeID: emp.EmployeeID,
             CreatedAt: new Date().toISOString(),
             ExpiresAt: expiresAt.toISOString()
           });
+          if (insSessionErr) throw new Error(insSessionErr.message);
 
           // Update last login
-          await supabase.from('Employees').update({ LastLogin: new Date().toISOString() }).eq('EmployeeID', emp.EmployeeID);
+          const { error: updLoginErr } = await supabase.from('Employees').update({ LastLogin: new Date().toISOString() }).eq('EmployeeID', emp.EmployeeID);
+          if (updLoginErr) throw new Error(updLoginErr.message);
 
           delete emp.PasswordHash;
           result = { token: sessionToken, user: emp };
@@ -147,7 +185,8 @@ const API = {
             stats.trendLabels.push(days[dObj.getDay()]);
           }
 
-          let { data: leads } = await supabase.from('Leads').select('*');
+          let { data: leads, error: lErr } = await supabase.from('Leads').select('*');
+          if (lErr) throw new Error(lErr.message);
           leads = leads || [];
           if (user.Role === 'Sales Executive') {
             leads = leads.filter(l => l.AssignedExec === user.EmployeeID);
@@ -167,7 +206,8 @@ const API = {
             if (l.Status === 'Scheduled' && l.ExpFitmentDate === today) stats.todayFitment++;
           });
 
-          let { data: followups } = await supabase.from('FollowUps').select('*');
+          let { data: followups, error: fErr } = await supabase.from('FollowUps').select('*');
+          if (fErr) throw new Error(fErr.message);
           followups = followups || [];
           if (user.Role === 'Sales Executive') {
             followups = followups.filter(fu => fu.Exec === user.EmployeeID);
@@ -217,7 +257,8 @@ const API = {
             endDate = payload.endDate;
           }
 
-          let { data: leads } = await supabase.from('Leads').select('*');
+          let { data: leads, error: lErr } = await supabase.from('Leads').select('*');
+          if (lErr) throw new Error(lErr.message);
           leads = leads || [];
           if (user.Role === 'Sales Executive') {
             leads = leads.filter(l => l.AssignedExec === user.EmployeeID);
@@ -252,7 +293,8 @@ const API = {
               }
             });
 
-            let { data: allFollowups } = await supabase.from('FollowUps').select('*');
+            let { data: allFollowups, error: fErr } = await supabase.from('FollowUps').select('*');
+            if (fErr) throw new Error(fErr.message);
             allFollowups = allFollowups || [];
             allFollowups.forEach(fu => {
               if (fu.Date && (!startDate || fu.Date >= startDate) && (!endDate || fu.Date <= endDate)) {
@@ -264,7 +306,8 @@ const API = {
               }
             });
 
-            let { data: allCompleted } = await supabase.from('Completed').select('*');
+            let { data: allCompleted, error: cErr } = await supabase.from('Completed').select('*');
+            if (cErr) throw new Error(cErr.message);
             allCompleted = allCompleted || [];
             allCompleted.forEach(comp => {
               if (comp.CompDate && (!startDate || comp.CompDate >= startDate) && (!endDate || comp.CompDate <= endDate)) {
@@ -289,7 +332,8 @@ const API = {
         }
 
         case "getEmployees": {
-          let { data: employees } = await supabase.from('Employees').select('*');
+          let { data: employees, error: eErr } = await supabase.from('Employees').select('*');
+          if (eErr) throw new Error(eErr.message);
           employees = employees || [];
           if (user.Role === 'Branch Manager') {
             const mgrBranches = user.Branches ? user.Branches.split(',').map(b => b.trim()) : [];
@@ -305,44 +349,90 @@ const API = {
 
         case "createEmployee": {
           const hash = await this.hashPassword(payload.Password);
-          const newEmp = { ...payload, PasswordHash: hash, CreatedAt: new Date().toISOString() };
-          delete newEmp.Password;
-          const { data } = await supabase.from('Employees').insert(newEmp).select().single();
+          const rawEmp = { ...payload, PasswordHash: hash, CreatedAt: new Date().toISOString() };
+          delete rawEmp.Password;
+          const cleanEmp = this.sanitize('Employees', rawEmp);
+          const { data, error } = await supabase.from('Employees').insert(cleanEmp).select().single();
+          if (error) throw new Error(error.message);
           result = data;
           break;
         }
 
         case "updateEmployee": {
-          const updateData = { ...payload };
+          const rawEmp = { ...payload };
           if (payload.Password) {
-            updateData.PasswordHash = await this.hashPassword(payload.Password);
-            delete updateData.Password;
+            rawEmp.PasswordHash = await this.hashPassword(payload.Password);
+            delete rawEmp.Password;
           }
-          const { data } = await supabase.from('Employees').update(updateData).eq('EmployeeID', payload.EmployeeID).select().single();
+          const cleanEmp = this.sanitize('Employees', rawEmp);
+          const { data, error } = await supabase.from('Employees').update(cleanEmp).eq('EmployeeID', payload.EmployeeID).select().single();
+          if (error) throw new Error(error.message);
           result = data;
           break;
         }
 
         case "getBranches": {
-          const { data } = await supabase.from('Branches').select('*');
+          const { data, error } = await supabase.from('Branches').select('*');
+          if (error) throw new Error(error.message);
           result = data;
           break;
         }
 
         case "createBranch": {
-          const { data } = await supabase.from('Branches').insert(payload).select().single();
+          const cleanBranch = this.sanitize('Branches', payload);
+          const { data, error } = await supabase.from('Branches').insert(cleanBranch).select().single();
+          if (error) throw new Error(error.message);
           result = data;
           break;
         }
 
         case "updateBranch": {
-          const { data } = await supabase.from('Branches').update(payload).eq('BranchID', payload.BranchID).select().single();
+          const cleanBranch = this.sanitize('Branches', payload);
+          const { data, error } = await supabase.from('Branches').update(cleanBranch).eq('BranchID', payload.BranchID).select().single();
+          if (error) throw new Error(error.message);
           result = data;
           break;
         }
 
+        case "getLeadInitialData": {
+          const { data: branches, error: bErr } = await supabase.from('Branches').select('*').eq('Status', 'Active');
+          if (bErr) throw new Error(bErr.message);
+
+          let { data: employees, error: eErr } = await supabase.from('Employees').select('*').eq('Status', 'Active');
+          if (eErr) throw new Error(eErr.message);
+          
+          employees = employees || [];
+          if (user.Role === 'Branch Manager') {
+            const mgrBranches = user.Branches ? user.Branches.split(',').map(b => b.trim()) : [];
+            employees = employees.filter(emp => {
+              if (emp.Role === 'Super Admin') return false;
+              const empBranches = emp.Branches ? emp.Branches.split(',').map(b => b.trim()) : [];
+              return empBranches.some(b => mgrBranches.includes(b));
+            });
+          }
+
+          const { data: tyreSizes, error: tsErr } = await supabase.from('MasterTyreSize').select('*').eq('Active', 'Active');
+          if (tsErr) throw new Error(tsErr.message);
+
+          const { data: brands, error: brErr } = await supabase.from('MasterBrands').select('*').eq('Active', 'Active');
+          if (brErr) throw new Error(brErr.message);
+
+          const { data: vehicles, error: vErr } = await supabase.from('MasterVehicle').select('*');
+          if (vErr) throw new Error(vErr.message);
+
+          result = {
+            branches: branches || [],
+            employees: employees || [],
+            tyreSizes: tyreSizes || [],
+            brands: brands || [],
+            vehicles: vehicles || []
+          };
+          break;
+        }
+
         case "getLeads": {
-          let { data: leads } = await supabase.from('Leads').select('*');
+          let { data: leads, error: lErr } = await supabase.from('Leads').select('*');
+          if (lErr) throw new Error(lErr.message);
           leads = leads || [];
           if (user.Role === 'Sales Executive') {
             leads = leads.filter(l => l.AssignedExec === user.EmployeeID);
@@ -360,7 +450,7 @@ const API = {
         }
 
         case "createLead": {
-          const newLead = {
+          const rawLead = {
             ...payload,
             Date: payload.Date || new Date().toISOString().split('T')[0],
             Time: payload.Time || new Date().toTimeString().split(' ')[0].substring(0, 5),
@@ -368,40 +458,50 @@ const API = {
             CreatedAt: new Date().toISOString(),
             UpdatedAt: new Date().toISOString()
           };
-          await supabase.from('Leads').insert(newLead);
+          const cleanLead = this.sanitize('Leads', rawLead);
+          const { error: insErr } = await supabase.from('Leads').insert(cleanLead);
+          if (insErr) throw new Error(insErr.message);
           
           // Auto-create initial follow-up reminder
           const tomorrow = new Date();
           tomorrow.setDate(tomorrow.getDate() + 1);
           const remDate = tomorrow.toISOString().split('T')[0];
-          await supabase.from('FollowUps').insert({
+          
+          const rawFu = {
             FollowUpID: "FU-" + Math.random().toString(36).substring(2, 12).toUpperCase(),
-            LeadID: newLead.LeadID,
-            Date: newLead.Date,
-            Time: newLead.Time,
+            LeadID: cleanLead.LeadID,
+            Date: cleanLead.Date,
+            Time: cleanLead.Time,
             Discussion: "New Lead Created.",
             RemDate: remDate,
             RemTime: "10:00",
-            Exec: newLead.AssignedExec,
+            Exec: cleanLead.AssignedExec,
             Status: "Pending",
             CreatedAt: new Date().toISOString()
-          });
+          };
+          const cleanFu = this.sanitize('FollowUps', rawFu);
+          const { error: insFuErr } = await supabase.from('FollowUps').insert(cleanFu);
+          if (insFuErr) throw new Error(insFuErr.message);
           
-          result = newLead;
+          result = cleanLead;
           break;
         }
 
         case "updateLead": {
-          const updateData = { ...payload, UpdatedAt: new Date().toISOString() };
-          await supabase.from('Leads').update(updateData).eq('LeadID', payload.LeadID);
-          result = updateData;
+          const rawLead = { ...payload, UpdatedAt: new Date().toISOString() };
+          const cleanLead = this.sanitize('Leads', rawLead);
+          const { error: updErr } = await supabase.from('Leads').update(cleanLead).eq('LeadID', payload.LeadID);
+          if (updErr) throw new Error(updErr.message);
+          result = cleanLead;
           break;
         }
 
         case "checkDuplicateLead": {
-          const { data: leads } = await supabase.from('Leads')
+          const { data: leads, error: dupErr } = await supabase.from('Leads')
             .select('*')
             .or(`Mobile.eq.${payload.mobile},VehicleNumber.eq.${payload.vehicleNumber}`);
+          if (dupErr) throw new Error(dupErr.message);
+
           const mobileMatch = (leads || []).find(l => l.Mobile === payload.mobile);
           const vehicleMatch = (leads || []).find(l => l.VehicleNumber === payload.vehicleNumber);
           result = {
@@ -412,55 +512,40 @@ const API = {
           break;
         }
 
-        case "getLeadInitialData": {
-          const { data: branches } = await supabase.from('Branches').select('*').eq('Status', 'Active');
-          let { data: employees } = await supabase.from('Employees').select('*').eq('Status', 'Active');
-          
-          employees = employees || [];
-          if (user.Role === 'Branch Manager') {
-            const mgrBranches = user.Branches ? user.Branches.split(',').map(b => b.trim()) : [];
-            employees = employees.filter(emp => {
-              if (emp.Role === 'Super Admin') return false;
-              const empBranches = emp.Branches ? emp.Branches.split(',').map(b => b.trim()) : [];
-              return empBranches.some(b => mgrBranches.includes(b));
-            });
-          }
-
-          const { data: tyreSizes } = await supabase.from('MasterTyreSize').select('*').eq('Active', 'Active');
-          const { data: brands } = await supabase.from('MasterBrands').select('*').eq('Active', 'Active');
-          const { data: vehicles } = await supabase.from('MasterVehicle').select('*');
-
-          result = {
-            branches: branches || [],
-            employees: employees || [],
-            tyreSizes: tyreSizes || [],
-            brands: brands || [],
-            vehicles: vehicles || []
-          };
-          break;
-        }
-
         case "getLeadDetails": {
-          const { data: lead } = await supabase.from('Leads').select('*').eq('LeadID', payload.leadId).single();
-          const { data: followups } = await supabase.from('FollowUps').select('*').eq('LeadID', payload.leadId).order('CreatedAt', { ascending: false });
-          const { data: schedule } = await supabase.from('ScheduleFitment').select('*').eq('LeadID', payload.leadId).eq('Status', 'Scheduled').maybeSingle();
-          const { data: completed } = await supabase.from('Completed').select('*').eq('LeadID', payload.leadId).maybeSingle();
-          const { data: lost } = await supabase.from('Lost').select('*').eq('LeadID', payload.leadId).maybeSingle();
+          const { data: lead, error: lErr } = await supabase.from('Leads').select('*').eq('LeadID', payload.leadId).single();
+          if (lErr) throw new Error(lErr.message);
+
+          const { data: followups, error: fErr } = await supabase.from('FollowUps').select('*').eq('LeadID', payload.leadId).order('CreatedAt', { ascending: false });
+          if (fErr) throw new Error(fErr.message);
+
+          const { data: schedule, error: sErr } = await supabase.from('ScheduleFitment').select('*').eq('LeadID', payload.leadId).eq('Status', 'Scheduled').maybeSingle();
+          if (sErr) throw new Error(sErr.message);
+
+          const { data: completed, error: cErr } = await supabase.from('Completed').select('*').eq('LeadID', payload.leadId).maybeSingle();
+          if (cErr) throw new Error(cErr.message);
+
+          const { data: lost, error: lostErr } = await supabase.from('Lost').select('*').eq('LeadID', payload.leadId).maybeSingle();
+          if (lostErr) throw new Error(lostErr.message);
+
           result = { lead, followups, schedule, completed, lost };
           break;
         }
 
         case "globalSearch": {
-          const { data: leads } = await supabase.from('Leads')
+          const { data: leads, error: sErr } = await supabase.from('Leads')
             .select('*')
             .or(`CustomerName.ilike.%${payload.query}%,Mobile.ilike.%${payload.query}%,VehicleNumber.ilike.%${payload.query}%`)
             .limit(20);
+          if (sErr) throw new Error(sErr.message);
           result = leads;
           break;
         }
 
         case "getFollowUps": {
-          const { data: allLeads } = await supabase.from('Leads').select('LeadID, Status, CustomerName, Mobile');
+          const { data: allLeads, error: lErr } = await supabase.from('Leads').select('LeadID, Status, CustomerName, Mobile');
+          if (lErr) throw new Error(lErr.message);
+
           const leadStatusMap = {};
           const leadDetailsMap = {};
           (allLeads || []).forEach(l => {
@@ -468,7 +553,8 @@ const API = {
             leadDetailsMap[l.LeadID] = { CustomerName: l.CustomerName, Mobile: l.Mobile };
           });
 
-          let { data: followups } = await supabase.from('FollowUps').select('*');
+          let { data: followups, error: fErr } = await supabase.from('FollowUps').select('*');
+          if (fErr) throw new Error(fErr.message);
           followups = followups || [];
 
           if (payload.type !== 'today_completed') {
@@ -530,7 +616,7 @@ const API = {
         }
 
         case "addFollowUp": {
-          const fu = {
+          const rawFu = {
             FollowUpID: "FU-" + Math.random().toString(36).substring(2, 12).toUpperCase(),
             LeadID: payload.LeadID,
             Date: new Date().toISOString().split('T')[0],
@@ -543,20 +629,23 @@ const API = {
             Status: payload.Status || 'Completed',
             CreatedAt: new Date().toISOString()
           };
-          await supabase.from('FollowUps').insert(fu);
+          const cleanFu = this.sanitize('FollowUps', rawFu);
+          const { error: insErr } = await supabase.from('FollowUps').insert(cleanFu);
+          if (insErr) throw new Error(insErr.message);
           
-          const updateData = { UpdatedAt: new Date().toISOString() };
+          const rawLeadUpd = { UpdatedAt: new Date().toISOString() };
           if (payload.RemDate) {
-            updateData.Remarks = "Reminder: " + payload.RemDate + " " + (payload.RemTime || "");
+            rawLeadUpd.Remarks = "Reminder: " + payload.RemDate + " " + (payload.RemTime || "");
           }
-          await supabase.from('Leads').update(updateData).eq('LeadID', payload.LeadID);
+          const { error: updErr } = await supabase.from('Leads').update(rawLeadUpd).eq('LeadID', payload.LeadID);
+          if (updErr) throw new Error(updErr.message);
           
-          result = fu;
+          result = cleanFu;
           break;
         }
 
         case "scheduleFitment": {
-          const sch = {
+          const rawSch = {
             ScheduleID: "SCH-" + Math.random().toString(36).substring(2, 12).toUpperCase(),
             LeadID: payload.LeadID,
             FitmentDate: payload.FitmentDate,
@@ -570,27 +659,32 @@ const API = {
             Status: 'Scheduled',
             CreatedAt: new Date().toISOString()
           };
-          await supabase.from('ScheduleFitment').insert(sch);
+          const cleanSch = this.sanitize('ScheduleFitment', rawSch);
+          const { error: insErr } = await supabase.from('ScheduleFitment').insert(cleanSch);
+          if (insErr) throw new Error(insErr.message);
           
-          await supabase.from('Leads').update({
+          const { error: updErr } = await supabase.from('Leads').update({
             Status: 'Scheduled',
             ExpFitmentDate: payload.FitmentDate,
             UpdatedAt: new Date().toISOString()
           }).eq('LeadID', payload.LeadID);
+          if (updErr) throw new Error(updErr.message);
           
-          result = sch;
+          result = cleanSch;
           break;
         }
 
         case "revertSchedule": {
-          await supabase.from('Leads').update({
+          const { error: updErr } = await supabase.from('Leads').update({
             Status: 'Open',
             UpdatedAt: new Date().toISOString()
           }).eq('LeadID', payload.LeadID);
+          if (updErr) throw new Error(updErr.message);
           
-          await supabase.from('ScheduleFitment').update({ Status: 'Reverted' }).eq('LeadID', payload.LeadID);
+          const { error: updSchErr } = await supabase.from('ScheduleFitment').update({ Status: 'Reverted' }).eq('LeadID', payload.LeadID);
+          if (updSchErr) throw new Error(updSchErr.message);
           
-          const fuRevert = {
+          const rawFu = {
             FollowUpID: "FU-" + Math.random().toString(36).substring(2, 12).toUpperCase(),
             LeadID: payload.LeadID,
             Date: new Date().toISOString().split('T')[0],
@@ -602,13 +696,16 @@ const API = {
             Status: 'Pending',
             CreatedAt: new Date().toISOString()
           };
-          await supabase.from('FollowUps').insert(fuRevert);
-          result = fuRevert;
+          const cleanFu = this.sanitize('FollowUps', rawFu);
+          const { error: insFuErr } = await supabase.from('FollowUps').insert(cleanFu);
+          if (insFuErr) throw new Error(insFuErr.message);
+          
+          result = cleanFu;
           break;
         }
 
         case "markCompleted": {
-          const comp = {
+          const rawComp = {
             CompID: "COM-" + Math.random().toString(36).substring(2, 12).toUpperCase(),
             LeadID: payload.LeadID,
             CompDate: payload.CompDate,
@@ -618,45 +715,54 @@ const API = {
             Remarks: payload.Remarks || '',
             CreatedAt: new Date().toISOString()
           };
-          await supabase.from('Completed').insert(comp);
+          const cleanComp = this.sanitize('Completed', rawComp);
+          const { error: insErr } = await supabase.from('Completed').insert(cleanComp);
+          if (insErr) throw new Error(insErr.message);
           
-          await supabase.from('Leads').update({
+          const { error: updErr } = await supabase.from('Leads').update({
             Status: 'Completed',
             UpdatedAt: new Date().toISOString()
           }).eq('LeadID', payload.LeadID);
+          if (updErr) throw new Error(updErr.message);
           
-          result = comp;
+          result = cleanComp;
           break;
         }
 
         case "markLost": {
-          const lost = {
+          const rawLost = {
             LostID: "LST-" + Math.random().toString(36).substring(2, 12).toUpperCase(),
             LeadID: payload.LeadID,
             Reason: payload.Reason,
             Remarks: payload.Remarks || '',
             CreatedAt: new Date().toISOString()
           };
-          await supabase.from('Lost').insert(lost);
+          const cleanLost = this.sanitize('Lost', rawLost);
+          const { error: insErr } = await supabase.from('Lost').insert(cleanLost);
+          if (insErr) throw new Error(insErr.message);
           
-          await supabase.from('Leads').update({
+          const { error: updErr } = await supabase.from('Leads').update({
             Status: 'Lost',
             UpdatedAt: new Date().toISOString()
           }).eq('LeadID', payload.LeadID);
+          if (updErr) throw new Error(updErr.message);
           
-          result = lost;
+          result = cleanLost;
           break;
         }
 
         case "getMasterData": {
           if (payload.type === 'TyreSize') {
-            const { data } = await supabase.from('MasterTyreSize').select('*').eq('Active', 'Active');
+            const { data, error } = await supabase.from('MasterTyreSize').select('*').eq('Active', 'Active');
+            if (error) throw new Error(error.message);
             result = data || [];
           } else if (payload.type === 'Brand') {
-            const { data } = await supabase.from('MasterBrands').select('*').eq('Active', 'Active');
+            const { data, error } = await supabase.from('MasterBrands').select('*').eq('Active', 'Active');
+            if (error) throw new Error(error.message);
             result = data || [];
           } else if (payload.type === 'Vehicle') {
-            const { data } = await supabase.from('MasterVehicle').select('*');
+            const { data, error } = await supabase.from('MasterVehicle').select('*');
+            if (error) throw new Error(error.message);
             result = data || [];
           } else {
             result = [];
