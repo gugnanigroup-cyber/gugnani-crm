@@ -684,7 +684,7 @@ window.initScheduleFormEvents = function() {
                       <input type="date" id="swalSchDate" class="form-control" min="${CRMUtils.getLocalDateISO()}" value="${CRMUtils.getLocalDateISO()}" required>
                   </div>
                   <div class="col-6">
-                      <label class="form-label fw-bold">Time <span class="text-danger">*</span></label>
+                      <label class="form-label fw-bold">Time <small class="text-muted fw-normal">(blank = 10:00 AM)</small></label>
                       <input type="time" id="swalSchTime" class="form-control" value="10:00">
                   </div>
                   <div class="col-6">
@@ -721,7 +721,7 @@ window.initScheduleFormEvents = function() {
               }
               return {
                   date: date,
-                  time: document.getElementById('swalSchTime').value,
+                  time: document.getElementById('swalSchTime').value || '10:00',
                   size: document.getElementById('swalSchSize').value,
                   qty: document.getElementById('swalSchQty').value,
                   reserved: document.getElementById('swalSchReserved').value,

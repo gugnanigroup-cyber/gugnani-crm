@@ -164,6 +164,158 @@ function lmRenderTimeline(followups, lead) {
 
 
 
+// Helper: blur/unblur lead details modal body when Swal is open on top
+function _blurLeadModal(blur) {
+    const modalBody = document.querySelector('#leadDetailsModal .modal-body');
+    if (modalBody) modalBody.style.filter = blur ? 'blur(4px)' : '';
+}
+
+// Swal-based Mark Complete / Mark Lost from inside Lead Details modal
+window.lmSwalAction = function(action) {
+    if (action === 'completed') {
+        _blurLeadModal(true);
+        Swal.fire({
+            title: 'Mark as Completed',
+            html: `
+                <div class="mb-3 text-start">
+                    <label class="form-label fw-bold">Completion Date <span class="text-danger">*</span></label>
+                    <input type="date" id="swalCompDate" class="form-control" value="${CRMUtils.getLocalDateISO()}" required>
+                </div>
+                <div class="mb-3 text-start">
+                    <label class="form-label fw-bold">Invoice Number (Optional)</label>
+                    <input type="text" id="swalCompInvoice" class="form-control" placeholder="Invoice #">
+                </div>
+                <div class="mb-3 text-start">
+                    <label class="form-label fw-bold">Remarks</label>
+                    <textarea id="swalCompRemarks" class="form-control" rows="2"></textarea>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: '<i class="fa-solid fa-check"></i> Confirm Completion',
+            confirmButtonColor: '#198754',
+            cancelButtonText: 'Cancel',
+            preConfirm: () => {
+                const date = document.getElementById('swalCompDate').value;
+                if (!date) { Swal.showValidationMessage('Completion date is required'); return false; }
+                return { compDate: date, invoiceNo: document.getElementById('swalCompInvoice').value, remarks: document.getElementById('swalCompRemarks').value };
+            }
+        }).then(async (result) => {
+            _blurLeadModal(false);
+            if (result.isConfirmed) {
+                try {
+                    await API.call('markCompleted', { LeadID: lmCurrentLeadId, CompDate: result.value.compDate, InvoiceNo: result.value.invoiceNo, Remarks: result.value.remarks });
+                    Swal.fire({ icon: 'success', title: 'Completed!', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                    CRMUtils.refreshPageData();
+                } catch(e) { Swal.fire('Error', e.message, 'error'); }
+            }
+        });
+
+    } else if (action === 'lost') {
+        _blurLeadModal(true);
+        Swal.fire({
+            title: 'Mark as Lost',
+            html: `
+                <div class="mb-3 text-start">
+                    <label class="form-label fw-bold">Lost Reason <span class="text-danger">*</span></label>
+                    <select id="swalLostReason" class="form-select">
+                        <option value="">Select Reason</option>
+                        <option value="Purchased Elsewhere">Purchased Elsewhere</option>
+                        <option value="Price High">Price High</option>
+                        <option value="Out Of Stock">Out Of Stock</option>
+                        <option value="Vehicle Sold">Vehicle Sold</option>
+                        <option value="Wrong Number">Wrong Number</option>
+                        <option value="Duplicate">Duplicate</option>
+                        <option value="No Requirement">No Requirement</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="mb-3 text-start">
+                    <label class="form-label fw-bold">Remarks</label>
+                    <textarea id="swalLostRemarks" class="form-control" rows="2"></textarea>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: '<i class="fa-solid fa-xmark"></i> Mark as Lost',
+            confirmButtonColor: '#dc3545',
+            cancelButtonText: 'Cancel',
+            preConfirm: () => {
+                const reason = document.getElementById('swalLostReason').value;
+                if (!reason) { Swal.showValidationMessage('Please select a reason'); return false; }
+                return { reason: reason, remarks: document.getElementById('swalLostRemarks').value };
+            }
+        }).then(async (result) => {
+            _blurLeadModal(false);
+            if (result.isConfirmed) {
+                try {
+                    await API.call('markLost', { LeadID: lmCurrentLeadId, Reason: result.value.reason, Remarks: result.value.remarks });
+                    Swal.fire({ icon: 'success', title: 'Marked Lost', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                    CRMUtils.refreshPageData();
+                } catch(e) { Swal.fire('Error', e.message, 'error'); }
+            }
+        });
+    }
+};
+
+// Swal-based Schedule Fitment from inside Lead Details modal
+window.lmSwalSchedule = function() {
+    const lead = lmCurrentLeadId && window.CRMCachedLeads && window.CRMCachedLeads[lmCurrentLeadId];
+    _blurLeadModal(true);
+    Swal.fire({
+        title: 'Schedule Fitment',
+        html: `
+            <div class="row g-3 text-start">
+                <div class="col-6">
+                    <label class="form-label fw-bold">Fitment Date <span class="text-danger">*</span></label>
+                    <input type="date" id="swalSchDate" class="form-control" min="${CRMUtils.getLocalDateISO()}" value="${CRMUtils.getLocalDateISO()}" required>
+                </div>
+                <div class="col-6">
+                    <label class="form-label fw-bold">Time <small class="text-muted fw-normal">(blank = 10:00 AM)</small></label>
+                    <input type="time" id="swalSchTime" class="form-control" value="10:00">
+                </div>
+                <div class="col-6">
+                    <label class="form-label fw-bold">Tyre Size</label>
+                    <input type="text" id="swalSchSize" class="form-control" value="${lead ? (lead.TyreSize || '') : ''}">
+                </div>
+                <div class="col-6">
+                    <label class="form-label fw-bold">Quantity</label>
+                    <input type="number" id="swalSchQty" class="form-control" value="${lead ? (lead.Quantity || '') : ''}">
+                </div>
+                <div class="col-6">
+                    <label class="form-label fw-bold">Reserved Stock?</label>
+                    <select id="swalSchReserved" class="form-select">
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Remarks</label>
+                    <textarea id="swalSchRemarks" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-calendar-check"></i> Confirm Schedule',
+        confirmButtonColor: '#0d6efd',
+        cancelButtonText: 'Cancel',
+        width: '600px',
+        preConfirm: () => {
+            const date = document.getElementById('swalSchDate').value;
+            if (!date) { Swal.showValidationMessage('Fitment date is required'); return false; }
+            return { date, time: document.getElementById('swalSchTime').value || '10:00', size: document.getElementById('swalSchSize').value, qty: document.getElementById('swalSchQty').value, reserved: document.getElementById('swalSchReserved').value, remarks: document.getElementById('swalSchRemarks').value };
+        }
+    }).then(async (result) => {
+        _blurLeadModal(false);
+        if (result.isConfirmed) {
+            try {
+                const res = await API.call('scheduleFitment', { LeadID: lmCurrentLeadId, FitmentDate: result.value.date, FitmentTime: result.value.time, TyreSize: result.value.size, Quantity: result.value.qty, ReservedStock: result.value.reserved, Remarks: result.value.remarks });
+                const msg = res.rescheduled ? 'Fitment rescheduled!' : 'Fitment scheduled!';
+                Swal.fire({ icon: 'success', title: msg, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                CRMUtils.refreshPageData();
+            } catch(e) { Swal.fire('Error', e.message, 'error'); }
+        }
+    });
+};
+
 window.lmOpenActionModal = function(action) {
     const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('lmActionModal'));
     

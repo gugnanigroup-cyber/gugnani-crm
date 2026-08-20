@@ -1,8 +1,9 @@
-const CACHE_NAME = 'crm-v86';
+const CACHE_NAME = 'crm-v92';
 const STATIC_ASSETS = [
     './login.html',
     './dashboard.html',
     './leads.html',
+    './completed.html',
     './css/styles.css',
     './js/config.js',
     './js/auth.js',
@@ -14,7 +15,8 @@ const STATIC_ASSETS = [
     './js/dashboard.js',
     './js/leads.js',
     './js/lead-form.js',
-    './js/lead-modal.js'
+    './js/lead-modal.js',
+    './js/completed.js'
 ];
 
 self.addEventListener('install', (event) => {

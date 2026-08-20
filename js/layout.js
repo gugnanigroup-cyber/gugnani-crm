@@ -42,6 +42,9 @@ window.Layout = {
                   <a class="nav-link" href="schedule.html"><i class="fa-solid fa-calendar-check me-3"></i> Fitment Schedule</a>
               </li>
               <li class="nav-item">
+                  <a class="nav-link" href="completed.html"><i class="fa-solid fa-circle-check me-3"></i> Completed Leads</a>
+              </li>
+              <li class="nav-item">
                   <a class="nav-link" href="reports.html"><i class="fa-solid fa-chart-line me-3"></i> Reports</a>
               </li>
               
@@ -143,10 +146,10 @@ window.Layout = {
                   <div class="col-lg-6">
                       <div class="premium-card p-4 bg-white h-100 d-flex flex-column">
                           <div id="lmTopActionButtons" class="d-flex justify-content-between mb-3">
-                              <button class="btn btn-sm btn-success px-3 rounded-pill" onclick="lmOpenActionModal('completed')">
+                              <button class="btn btn-sm btn-success px-3 rounded-pill" onclick="window.lmSwalAction('completed')">
                                   <i class="fa-solid fa-check"></i> Mark Complete
                               </button>
-                              <button class="btn btn-sm btn-danger px-3 rounded-pill" onclick="lmOpenActionModal('lost')">
+                              <button class="btn btn-sm btn-danger px-3 rounded-pill" onclick="window.lmSwalAction('lost')">
                                   <i class="fa-solid fa-xmark"></i> Mark Lost
                               </button>
                           </div>
@@ -155,7 +158,7 @@ window.Layout = {
                           <div id="lmLeadInfoContainer"></div>
                           
                           <div id="lmBottomActionButtons" class="mt-auto pt-3 border-top">
-                              <button class="btn btn-primary w-100" onclick="lmOpenScheduleModal()">
+                              <button class="btn btn-primary w-100" onclick="window.lmSwalSchedule()">
                                   <i class="fa-solid fa-calendar-check"></i> Schedule Fitment
                               </button>
                           </div>
@@ -282,8 +285,8 @@ window.Layout = {
                           <input type="date" class="form-control" id="lmSchDate" required>
                       </div>
                       <div class="col-md-6">
-                          <label class="form-label">Time <span class="text-danger">*</span></label>
-                          <input type="time" class="form-control" id="lmSchTime" required>
+                          <label class="form-label">Time <small class="text-muted">(blank = 10:00 AM)</small></label>
+                          <input type="time" class="form-control" id="lmSchTime">
                       </div>
                       <div class="col-md-6">
                           <label class="form-label">Tyre Size</label>
@@ -433,9 +436,8 @@ window.Layout = {
                                 <input type="number" id="budget" class="form-control bg-light" placeholder="₹">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Pref Brand</label>
-                                <select id="prefBrand" class="form-select bg-light" placeholder="Search brand...">
-                                    <option value=""></option>
+                                <label class="form-label fw-bold">Pref Brand <small class="text-muted fw-normal">(select multiple)</small></label>
+                                <select id="prefBrand" class="form-select bg-light" multiple placeholder="Select or add brand...">
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -472,6 +474,13 @@ window.Layout = {
                                 <input type="date" id="expFitmentDate" class="form-control bg-light">
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    Next Follow-up Date
+                                    <small class="text-muted fw-normal">(optional — blank = now)</small>
+                                </label>
+                                <input type="date" id="initialFollowUpDate" class="form-control bg-light">
+                            </div>
+                            <div class="col-12">
                                 <label class="form-label fw-bold">Remarks</label>
                                 <textarea id="remarks" class="form-control bg-light" rows="2"></textarea>
                             </div>

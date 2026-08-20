@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completed Leads - Gugnani Tyres CRM</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/table.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+    <div id="loader-overlay" class="hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="wrapper">
+        <div id="sidebar-container"></div>
+        
+        <div class="main-content">
+            <div id="topbar-container"></div>
+            
+            <div class="content-scrollable p-4">
+                
+                <!-- Page Header -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+                    <div>
+                        <h4 class="mb-1 text-secondary fw-bold">
+                            <i class="fa-solid fa-circle-check text-success me-2"></i> Completed Sales & Deliveries
+                        </h4>
+                        <p class="text-muted mb-0 small">Analyze completed customer sales, invoice records, and performance by date period.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-success shadow-sm rounded-pill px-3" onclick="exportCompletedCSV()">
+                            <i class="fa-solid fa-file-excel me-2"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filter Bar -->
+                <div class="premium-card p-3 mb-4 filter-bar">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold text-muted mb-1">Period Filter</label>
+                            <select class="form-select form-select-sm" id="periodFilter">
+                                <option value="this_month" selected>This Month</option>
+                                <option value="today">Today</option>
+                                <option value="yesterday">Yesterday</option>
+                                <option value="this_week">This Week</option>
+                                <option value="last_month">Last Month</option>
+                                <option value="this_year">This Year</option>
+                                <option value="all">All Time</option>
+                                <option value="custom">Custom Date Range</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-2 d-none" id="customDateFromGroup">
+                            <label class="form-label small fw-bold text-muted mb-1">From Date</label>
+                            <input type="date" class="form-control form-select-sm" id="dateFrom">
+                        </div>
+
+                        <div class="col-md-2 d-none" id="customDateToGroup">
+                            <label class="form-label small fw-bold text-muted mb-1">To Date</label>
+                            <input type="date" class="form-control form-select-sm" id="dateTo">
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold text-muted mb-1">Branch</label>
+                            <select class="form-select form-select-sm" id="filterBranch">
+                                <option value="All">All Branches</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold text-muted mb-1">Executive</label>
+                            <select class="form-select form-select-sm" id="filterExec">
+                                <option value="All">All Executives</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 d-flex gap-2">
+                            <button class="btn btn-sm btn-primary w-100" id="btnApplyFilter">
+                                <i class="fa-solid fa-filter me-1"></i> Apply Filter
+                            </button>
+                            <button class="btn btn-sm btn-light border" id="btnResetFilter" title="Reset Filters">
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Cards Summary -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="premium-card p-3 d-flex align-items-center" style="border-left: 4px solid #198754;">
+                            <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3 text-success">
+                                <i class="fa-solid fa-circle-check fs-4"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small fw-semibold text-uppercase">Completed Sales</div>
+                                <h3 class="mb-0 fw-bold text-dark" id="kpiTotalCompleted">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="premium-card p-3 d-flex align-items-center" style="border-left: 4px solid #0d6efd;">
+                            <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3 text-primary">
+                                <i class="fa-solid fa-cubes fs-4"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small fw-semibold text-uppercase">Total Tyres Sold</div>
+                                <h3 class="mb-0 fw-bold text-dark" id="kpiTotalQuantity">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="premium-card p-3 d-flex align-items-center" style="border-left: 4px solid #ffc107;">
+                            <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3 text-warning">
+                                <i class="fa-solid fa-file-invoice fs-4"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small fw-semibold text-uppercase">Invoices Issued</div>
+                                <h3 class="mb-0 fw-bold text-dark" id="kpiTotalInvoices">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="premium-card p-3 d-flex align-items-center" style="border-left: 4px solid #17a2b8;">
+                            <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3 text-info">
+                                <i class="fa-solid fa-store fs-4"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small fw-semibold text-uppercase">Active Branches</div>
+                                <h3 class="mb-0 fw-bold text-dark" id="kpiActiveBranches">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Container -->
+                <div class="premium-card p-3">
+                    <div class="table-responsive">
+                        <table id="completedTable" class="table table-premium align-middle w-100">
+                            <thead>
+                                <tr>
+                                    <th>Lead ID</th>
+                                    <th>Comp Date</th>
+                                    <th>Customer Info</th>
+                                    <th>Vehicle & Requirement</th>
+                                    <th>Invoice #</th>
+                                    <th>Branch / Exec</th>
+                                    <th>Remarks</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- App Scripts -->
+    <script src="js/config.js?v=92"></script>
+    <script src="js/auth.js?v=92"></script>
+    <script src="js/api.js?v=92"></script>
+    <script src="js/utils.js?v=92"></script>
+    <script src="js/layout.js?v=92"></script>
+    <script src="js/lead-modal.js?v=92"></script>
+    <script src="js/completed.js?v=92"></script>
+</body>
+</html>

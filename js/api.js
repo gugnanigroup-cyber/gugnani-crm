@@ -477,6 +477,67 @@ const API = {
           break;
         }
 
+        case "getCompletedLeads": {
+          let query = supabase.from('Leads').select('*').eq('Status', 'Completed');
+
+          if (user.Role === 'Sales Executive') {
+            query = query.eq('AssignedExec', user.EmployeeID);
+          } else if (user.Role === 'Branch Manager' || user.Role === 'Reception') {
+            const branches = user.Branches ? user.Branches.split(',').map(b => b.trim()) : [];
+            if (branches.length > 0) {
+              query = query.in('AssignedBranch', branches);
+            }
+          }
+
+          if (payload.branch && payload.branch !== 'All' && payload.branch !== '') {
+            query = query.eq('AssignedBranch', payload.branch);
+          }
+
+          if (payload.exec && payload.exec !== 'All' && payload.exec !== '') {
+            query = query.eq('AssignedExec', payload.exec);
+          }
+
+          query = query.order('UpdatedAt', { ascending: false }).limit(2000);
+
+          const { data: leads, error: lErr } = await query;
+          if (lErr) throw new Error(lErr.message);
+
+          const leadIds = (leads || []).map(l => l.LeadID);
+          let completedMap = {};
+          if (leadIds.length > 0) {
+            const { data: compList, error: cErr } = await supabase.from('Completed').select('*').in('LeadID', leadIds);
+            if (!cErr && compList) {
+              compList.forEach(c => {
+                completedMap[c.LeadID] = c;
+              });
+            }
+          }
+
+          const startDate = payload.startDate || '';
+          const endDate = payload.endDate || '';
+
+          const combined = (leads || []).map(l => {
+            const comp = completedMap[l.LeadID] || {};
+            const compDate = comp.CompDate || l.ExpFitmentDate || (l.UpdatedAt ? l.UpdatedAt.split('T')[0] : '');
+            return {
+              ...l,
+              CompID: comp.CompID || '',
+              CompDate: compDate,
+              CompTime: comp.CompTime || '',
+              InvoiceNo: comp.InvoiceNo || '',
+              CompRemarks: comp.Remarks || '',
+              CompletedBranch: comp.Branch || l.AssignedBranch
+            };
+          }).filter(item => {
+            if (startDate && item.CompDate && item.CompDate < startDate) return false;
+            if (endDate && item.CompDate && item.CompDate > endDate) return false;
+            return true;
+          });
+
+          result = combined;
+          break;
+        }
+
         case "createLead": {
           const generateLeadId = () => {
               const now = new Date();
@@ -512,15 +573,18 @@ const API = {
           if (insErr) throw new Error(insErr.message);
           
           // Auto-create initial follow-up reminder so it appears on the Follow-ups page immediately
+          // If a specific follow-up date was provided, use it at 10:00 AM; otherwise use current date & time
+          const fuDate = payload.InitialFollowUpDate || cleanLead.Date;
+          const fuTime = payload.InitialFollowUpDate ? '10:00' : cleanLead.Time;
           const rawFu = {
             FollowUpID: "FU-" + Math.random().toString(36).substring(2, 12).toUpperCase(),
             LeadID: cleanLead.LeadID,
-            Date: cleanLead.Date,
-            Time: cleanLead.Time,
+            Date: fuDate,
+            Time: fuTime,
             Discussion: "New Lead Created. Initial Contact Required.",
             Feedback: "New",
-            RemDate: cleanLead.Date,
-            RemTime: cleanLead.Time,
+            RemDate: fuDate,
+            RemTime: fuTime,
             Exec: cleanLead.AssignedExec,
             Status: "Pending",
             CreatedAt: new Date().toISOString()
@@ -788,13 +852,36 @@ const API = {
           const cleanComp = this.sanitize('Completed', rawComp);
           const { error: insErr } = await supabase.from('Completed').insert(cleanComp);
           if (insErr) throw new Error(insErr.message);
-          
+
+          // Format the date for display: YYYY-MM-DD → DD-MM-YYYY
+          const compDateFormatted = payload.CompDate
+            ? payload.CompDate.split('-').reverse().join('-')
+            : new Date().toLocaleDateString('en-IN');
+
+          // Auto-log to FollowUps for timeline history (matches legacy backend behavior)
+          const rawLog = {
+            FollowUpID: "FU-" + Math.random().toString(36).substring(2, 12).toUpperCase(),
+            LeadID: payload.LeadID,
+            Date: payload.CompDate || new Date().toISOString().split('T')[0],
+            Time: new Date().toTimeString().split(' ')[0].substring(0, 5),
+            Discussion: `Lead Marked as Completed. Date: ${compDateFormatted}. Invoice: ${payload.InvoiceNo || 'N/A'}. Remarks: ${payload.Remarks || 'None'}`,
+            Feedback: "Completed",
+            RemDate: null,
+            RemTime: null,
+            Exec: user.EmployeeID,
+            Status: "Completed",
+            CreatedAt: new Date().toISOString()
+          };
+          const cleanLog = this.sanitize('FollowUps', rawLog);
+          await supabase.from('FollowUps').insert(cleanLog);
+
           const { error: updErr } = await supabase.from('Leads').update({
             Status: 'Completed',
+            ExpFitmentDate: payload.CompDate || new Date().toISOString().split('T')[0],
             UpdatedAt: new Date().toISOString()
           }).eq('LeadID', payload.LeadID);
           if (updErr) throw new Error(updErr.message);
-          
+
           result = cleanComp;
           break;
         }
@@ -810,13 +897,32 @@ const API = {
           const cleanLost = this.sanitize('Lost', rawLost);
           const { error: insErr } = await supabase.from('Lost').insert(cleanLost);
           if (insErr) throw new Error(insErr.message);
-          
+
+          const todayFormatted = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+          // Auto-log to FollowUps for timeline history
+          const rawLostLog = {
+            FollowUpID: "FU-" + Math.random().toString(36).substring(2, 12).toUpperCase(),
+            LeadID: payload.LeadID,
+            Date: new Date().toISOString().split('T')[0],
+            Time: new Date().toTimeString().split(' ')[0].substring(0, 5),
+            Discussion: `Lead Marked as Lost. Date: ${todayFormatted}. Reason: ${payload.Reason}. Remarks: ${payload.Remarks || 'None'}`,
+            Feedback: "Lost",
+            RemDate: null,
+            RemTime: null,
+            Exec: user.EmployeeID,
+            Status: "Lost",
+            CreatedAt: new Date().toISOString()
+          };
+          const cleanLostLog = this.sanitize('FollowUps', rawLostLog);
+          await supabase.from('FollowUps').insert(cleanLostLog);
+
           const { error: updErr } = await supabase.from('Leads').update({
             Status: 'Lost',
             UpdatedAt: new Date().toISOString()
           }).eq('LeadID', payload.LeadID);
           if (updErr) throw new Error(updErr.message);
-          
+
           result = cleanLost;
           break;
         }

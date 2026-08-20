@@ -172,16 +172,15 @@ function initTomSelects(data) {
         }).filter(Boolean);
         new TomSelect(brandEl, {
             create: function(input) {
-                return {
-                    Brand: input
-                };
+                return { Brand: input };
             },
             valueField: 'Brand',
             labelField: 'Brand',
             searchField: 'Brand',
             options: mappedBrands,
             placeholder: 'Select or add brand...',
-            plugins: ['dropdown_input']
+            plugins: ['dropdown_input', 'remove_button'],
+            maxItems: null  // allow unlimited selections
         });
     }
 
@@ -232,14 +231,15 @@ function initTomSelects(data) {
 function setTomSelectValue(id, value) {
     const el = document.getElementById(id);
     if(el && el.tomselect && value) {
-        // If create is true and option doesn't exist, we must add it first
-        if (el.tomselect.settings.create) {
-            el.tomselect.addOption({
-                [el.tomselect.settings.valueField]: value,
-                [el.tomselect.settings.labelField]: value
-            });
-        }
-        el.tomselect.setValue(value);
+        const ts = el.tomselect;
+        // Handle comma-separated multi-select values (e.g. "MRF,Yokohama")
+        const values = String(value).split(',').map(v => v.trim()).filter(Boolean);
+        values.forEach(v => {
+            if (ts.settings.create) {
+                ts.addOption({ [ts.settings.valueField]: v, [ts.settings.labelField]: v });
+            }
+        });
+        ts.setValue(values.length === 1 ? values[0] : values);
     }
 }
 
@@ -421,13 +421,19 @@ async function submitLeadData() {
         TyreSize: document.getElementById('tyreSize').value,
         Quantity: document.getElementById('quantity').value,
         Budget: document.getElementById('budget').value,
-        PrefBrand: document.getElementById('prefBrand').value,
+        PrefBrand: (() => {
+            const el = document.getElementById('prefBrand');
+            if (el && el.tomselect) return el.tomselect.getValue().join(', ');
+            return el ? el.value : '';
+        })(),
         Source: document.getElementById('source').value,
         Priority: document.getElementById('priority').value,
         AssignedExec: document.getElementById('assignedExec').value,
         AssignedBranch: document.getElementById('assignedBranch').value,
         ExpFitmentDate: document.getElementById('expFitmentDate').value,
-        Remarks: document.getElementById('remarks').value
+        Remarks: document.getElementById('remarks').value,
+        // Only used during createLead to set the initial follow-up date/time
+        InitialFollowUpDate: document.getElementById('initialFollowUpDate') ? document.getElementById('initialFollowUpDate').value : ''
     };
     
     if (currentEditLeadId) payload.LeadID = currentEditLeadId;
