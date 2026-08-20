@@ -556,6 +556,11 @@ window.initScheduleFormEvents = function() {
           Swal.fire('Denied', 'Reception cannot close leads.', 'error');
           return;
       }
+      // Close any open Bootstrap modals (e.g. Lead Details) before opening Swal
+      document.querySelectorAll('.modal.show').forEach(m => {
+          const instance = bootstrap.Modal.getInstance(m);
+          if (instance) instance.hide();
+      });
 
       if (action === 'completed') {
           Swal.fire({
@@ -664,6 +669,11 @@ window.initScheduleFormEvents = function() {
   };
 
   window.openScheduleModal = function(leadId) {
+      // Close any open Bootstrap modals before opening Swal
+      document.querySelectorAll('.modal.show').forEach(m => {
+          const instance = bootstrap.Modal.getInstance(m);
+          if (instance) instance.hide();
+      });
       const lead = window.CRMCachedLeads && window.CRMCachedLeads[leadId];
       Swal.fire({
           title: 'Edit Fitment Schedule',
