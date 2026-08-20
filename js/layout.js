@@ -801,6 +801,16 @@ window.Layout = {
         link.classList.add('active');
       }
     });
+
+    // Prevent Bootstrap modal from stealing focus when SweetAlert popup is open over it
+    if (!window._swalFocusOverrideBound) {
+        window._swalFocusOverrideBound = true;
+        document.addEventListener('focusin', function(e) {
+            if (e.target && e.target.closest && e.target.closest('.swal2-container')) {
+                e.stopImmediatePropagation();
+            }
+        }, true);
+    }
     
     // Global Search Binding
     const searchBar = document.getElementById('globalSearchBar');

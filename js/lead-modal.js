@@ -194,6 +194,10 @@ window.lmSwalAction = function(action) {
             confirmButtonText: '<i class="fa-solid fa-check"></i> Confirm Completion',
             confirmButtonColor: '#198754',
             cancelButtonText: 'Cancel',
+            didOpen: () => {
+                const el = document.getElementById('swalCompDate');
+                if (el) el.focus();
+            },
             preConfirm: () => {
                 const date = document.getElementById('swalCompDate').value;
                 if (!date) { Swal.showValidationMessage('Completion date is required'); return false; }
@@ -238,6 +242,10 @@ window.lmSwalAction = function(action) {
             confirmButtonText: '<i class="fa-solid fa-xmark"></i> Mark as Lost',
             confirmButtonColor: '#dc3545',
             cancelButtonText: 'Cancel',
+            didOpen: () => {
+                const el = document.getElementById('swalLostReason');
+                if (el) el.focus();
+            },
             preConfirm: () => {
                 const reason = document.getElementById('swalLostReason').value;
                 if (!reason) { Swal.showValidationMessage('Please select a reason'); return false; }
@@ -298,6 +306,10 @@ window.lmSwalSchedule = function() {
         confirmButtonColor: '#0d6efd',
         cancelButtonText: 'Cancel',
         width: '600px',
+        didOpen: () => {
+            const el = document.getElementById('swalSchDate');
+            if (el) el.focus();
+        },
         preConfirm: () => {
             const date = document.getElementById('swalSchDate').value;
             if (!date) { Swal.showValidationMessage('Fitment date is required'); return false; }
