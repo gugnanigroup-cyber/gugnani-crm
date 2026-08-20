@@ -3,6 +3,16 @@
  */
 
 const CRMUtils = {
+    escapeHtml: function(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    },
+
     setButtonLoading: function(btn, isLoading, originalText = 'Save') {
         if (!btn) return;
         if (isLoading) {

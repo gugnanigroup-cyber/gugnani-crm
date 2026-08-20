@@ -164,7 +164,10 @@ async function loadCompletedData() {
 function renderCompletedTable(data) {
     completedTable.clear();
 
-    const empMap = CRMUtils.getEmployeeMap ? CRMUtils.getEmployeeMap() : {};
+    const empMap = (CRMUtils && CRMUtils.getEmployeeMap) ? CRMUtils.getEmployeeMap() : {};
+    const esc = (str) => (CRMUtils && typeof CRMUtils.escapeHtml === 'function')
+        ? CRMUtils.escapeHtml(str)
+        : String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
     data.forEach(item => {
         const leadId = item.LeadID || '';
@@ -173,31 +176,31 @@ function renderCompletedTable(data) {
         const dateDisplay = `<span class="fw-bold text-dark">${compDateFormatted}</span>${compTime ? `<br><small class="text-muted"><i class="fa-regular fa-clock me-1"></i>${compTime}</small>` : ''}`;
 
         const customerInfo = `
-            <div class="fw-bold text-dark">${CRMUtils.escapeHtml(item.CustomerName || '-')}</div>
-            <small class="text-muted"><i class="fa-solid fa-phone me-1"></i>${CRMUtils.escapeHtml(item.Mobile || '-')}</small>
+            <div class="fw-bold text-dark">${esc(item.CustomerName || '-')}</div>
+            <small class="text-muted"><i class="fa-solid fa-phone me-1"></i>${esc(item.Mobile || '-')}</small>
         `;
 
         const vehicle = item.VehicleModel || item.VehicleCompany || item.VehicleType || '-';
-        const tyre = item.TyreSize ? `<span class="badge bg-light text-dark border me-1">${CRMUtils.escapeHtml(item.TyreSize)}</span>` : '';
+        const tyre = item.TyreSize ? `<span class="badge bg-light text-dark border me-1">${esc(item.TyreSize)}</span>` : '';
         const qty = item.Quantity ? `<span class="badge bg-secondary">Qty: ${item.Quantity}</span>` : '';
         const reqDisplay = `
-            <div class="small fw-semibold text-dark mb-1"><i class="fa-solid fa-car me-1 text-muted"></i>${CRMUtils.escapeHtml(vehicle)}</div>
+            <div class="small fw-semibold text-dark mb-1"><i class="fa-solid fa-car me-1 text-muted"></i>${esc(vehicle)}</div>
             <div>${tyre}${qty}</div>
         `;
 
         const invoiceDisplay = item.InvoiceNo
-            ? `<span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1"><i class="fa-solid fa-receipt me-1"></i>${CRMUtils.escapeHtml(item.InvoiceNo)}</span>`
+            ? `<span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1"><i class="fa-solid fa-receipt me-1"></i>${esc(item.InvoiceNo)}</span>`
             : `<span class="badge bg-light text-muted border">N/A</span>`;
 
         const execName = empMap[item.AssignedExec] || item.AssignedExec || '-';
         const branchName = item.CompletedBranch || item.AssignedBranch || '-';
         const branchExecDisplay = `
-            <div class="small fw-bold text-dark">${CRMUtils.escapeHtml(branchName)}</div>
-            <small class="text-muted"><i class="fa-solid fa-user-tie me-1"></i>${CRMUtils.escapeHtml(execName)}</small>
+            <div class="small fw-bold text-dark">${esc(branchName)}</div>
+            <small class="text-muted"><i class="fa-solid fa-user-tie me-1"></i>${esc(execName)}</small>
         `;
 
         const remarksDisplay = item.CompRemarks || item.Remarks
-            ? `<small class="text-muted">${CRMUtils.escapeHtml(item.CompRemarks || item.Remarks)}</small>`
+            ? `<small class="text-muted">${esc(item.CompRemarks || item.Remarks)}</small>`
             : `<small class="text-muted fs-7">-</small>`;
 
         const actionBtn = `
